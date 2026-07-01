@@ -1,0 +1,138 @@
+---
+import ThemeToggle from './ThemeToggle.astro';
+
+// 顶部导航唯一来源；桌面和移动端共用这份数据
+const nav = [
+  { label: '测评', href: '/reviews' },
+  { label: '横评', href: '/compare' },
+  { label: '场景合集', href: '/collections' },
+  { label: '情报', href: '/news' },
+  { label: '盲评', href: '/arena' },
+  { label: '排行榜', href: '/leaderboard' },
+  { label: '关于', href: '/about' },
+];
+
+// 服务端首屏先算一次当前页，客户端导航后由 Base.astro 里的脚本继续同步
+const path = Astro.url.pathname;
+const isActive = (href: string) =>
+  href !== '/' && (path === href || path.startsWith(href + '/'));
+---
+
+<header transition:persist class="sticky top-0 z-30 bg-bg/80 backdrop-blur-md">
+  {/* 桌面导航和右侧工具按钮 */}
+  <div class="mx-auto flex h-[4.5rem] max-w-7xl items-center gap-6 px-6">
+    <a href="/" class="shrink-0">
+      <span class="font-wordmark text-2xl font-semibold tracking-tight">Touchstone</span>
+    </a>
+
+    <nav class="ml-auto hidden items-center gap-8 text-base md:flex">
+      {nav.map((item) => (
+        <a
+          href={item.href}
+          data-nav
+          aria-current={isActive(item.href) ? 'page' : undefined}
+          class="ts-nav-link group relative text-muted transition-colors hover:text-text"
+        >
+          {item.label}
+          <span
+            class="ts-nav-underline absolute -bottom-2 left-0 h-px w-0 bg-primary transition-all duration-300 group-hover:w-full"
+          ></span>
+        </a>
+      ))}
+    </nav>
+
+    <div class="ml-auto flex items-center gap-1.5 md:ml-0">
+      <button
+        id="search-open"
+        class="ts-btn ts-btn-ghost !h-10 !w-10 !justify-center !p-0 text-sm sm:!w-auto sm:!px-3"
+        aria-label="站内搜索"
+        title="搜索 (Ctrl / ⌘ K)"
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.7" />
+          <path d="m20 20-3.2-3.2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+        </svg>
+        <span class="hidden text-muted lg:inline">搜索</span>
+      </button>
+
+      <ThemeToggle />
+
+      <button
+        id="menu-open"
+        class="ts-btn ts-btn-ghost !h-10 !w-10 !justify-center !p-0 md:hidden"
+        aria-label="导航菜单"
+        aria-expanded="false"
+        aria-controls="mobile-nav"
+      >
+        <svg class="menu-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+        </svg>
+        <svg class="close-icon hidden" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  {/* 移动端导航折叠面板，数据仍然来自上方 nav */}
+  <nav id="mobile-nav" class="mobile-nav md:hidden" aria-label="移动导航">
+    <div class="overflow-hidden">
+      <ul class="mx-auto max-w-7xl space-y-0.5 px-4 pt-1 pb-3">
+        {nav.map((item) => (
+          <li>
+            <a
+              href={item.href}
+              data-nav
+              aria-current={isActive(item.href) ? 'page' : undefined}
+              class="ts-mobile-link flex items-center justify-between rounded-lg px-3 py-2.5 text-text transition-colors hover:bg-bg-subtle"
+            >
+              {item.label}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </nav>
+</header>
+
+<style>
+  /* 用 grid-template-rows 做折叠动画，避免高度未知时跳动 */
+  .mobile-nav {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+    border-top: 1px solid transparent;
+  }
+  .mobile-nav.open {
+    grid-template-rows: 1fr;
+    border-top-color: var(--border);
+  }
+</style>
+
+<script is:inline>
+  (() => {
+    // 持久化 Header 只绑定一次菜单事件，避免客户端导航后重复监听
+    const btn = document.getElementById('menu-open');
+    const panel = document.getElementById('mobile-nav');
+    if (!btn || !panel) return;
+    const menuIcon = btn.querySelector('.menu-icon');
+    const closeIcon = btn.querySelector('.close-icon');
+
+    // 同步面板开关、按钮 aria 状态和图标显隐
+    const setOpen = (open) => {
+      panel.classList.toggle('open', open);
+      btn.setAttribute('aria-expanded', String(open));
+      menuIcon && menuIcon.classList.toggle('hidden', open);
+      closeIcon && closeIcon.classList.toggle('hidden', !open);
+    };
+
+    // 点击菜单按钮、点移动导航链接或按 Escape 都会关闭面板
+    btn.addEventListener('click', () => setOpen(!panel.classList.contains('open')));
+    panel.addEventListener('click', (e) => {
+      if (e.target.closest('a')) setOpen(false);
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') setOpen(false);
+    });
+  })();
+</script>

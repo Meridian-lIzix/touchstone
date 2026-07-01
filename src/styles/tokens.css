@@ -1,0 +1,59 @@
+/* ============================================================
+   Touchstone 设计令牌 — 暖编辑型极简
+   颜色用 oklch 定义（感知均匀 + P3 下珊瑚更鲜活），
+   末尾 @supports 块提供十六进制兜底（老浏览器不支持 light-dark/oklch 时）
+   主题：light-dark() 单一来源；默认浅色（不跟随系统），data-theme 手动切到暗色
+   ============================================================ */
+
+:root {
+  color-scheme: light;
+
+  /* —— 语义色（左浅色 / 右深色，由 color-scheme 决定）—— */
+  --bg:               light-dark(oklch(0.97 0.008 85), oklch(0.20 0.012 60));
+  --bg-subtle:        light-dark(oklch(0.95 0.012 80), oklch(0.24 0.012 60));
+  --surface:          light-dark(oklch(0.99 0.004 85), oklch(0.25 0.012 60));
+  --text:             light-dark(oklch(0.22 0.010 60), oklch(0.93 0.008 85));
+  --text-muted:       light-dark(oklch(0.52 0.015 60), oklch(0.68 0.015 70));
+  --border:           light-dark(oklch(0.90 0.012 80), oklch(0.32 0.012 60));
+  --primary:          light-dark(oklch(0.64 0.13 42),  oklch(0.70 0.13 42));
+  --primary-hover:    light-dark(oklch(0.58 0.14 42),  oklch(0.75 0.13 42));
+  --primary-contrast: light-dark(oklch(0.99 0.004 85), oklch(0.18 0.012 60));
+
+  /* 语义状态色（低饱和，不破坏暖调）*/
+  --good:             light-dark(oklch(0.58 0.09 150), oklch(0.70 0.09 150));
+  --warn:             light-dark(oklch(0.66 0.11 70),  oklch(0.76 0.11 70));
+  --bad:              light-dark(oklch(0.57 0.13 25),  oklch(0.68 0.13 25));
+
+  /* 阴影：极弱，仅浮层用 */
+  --shadow-soft: 0 1px 2px light-dark(oklch(0.22 0.01 60 / 0.05), oklch(0 0 0 / 0.35)),
+                 0 8px 28px light-dark(oklch(0.22 0.01 60 / 0.07), oklch(0 0 0 / 0.45));
+
+  /* —— 字体栈：拉丁字体自托管(fontsource) + 中文系统兜底 —— */
+  --font-serif: "Source Serif 4 Variable", "Source Serif 4", "Noto Serif SC",
+                "Songti SC", "STSong", "SimSun", Georgia, serif;
+  --font-sans:  "Inter Variable", "Inter", "Noto Sans SC", "PingFang SC",
+                "Microsoft YaHei", system-ui, -apple-system, sans-serif;
+  --font-mono:  "Geist Mono", ui-monospace, "SFMono-Regular", "Cascadia Code",
+                "Consolas", monospace;
+  /* 字标专用：Hanken Grotesk 是 Anthropic Sans 的免费近似，私有字体不可合法打包 */
+  --font-wordmark: "Hanken Grotesk Variable", "Inter Variable", system-ui, sans-serif;
+}
+
+/* 手动覆盖：锁定 color-scheme，light-dark() 随之取对应值 */
+:root[data-theme="light"] { color-scheme: light; }
+:root[data-theme="dark"]  { color-scheme: dark; }
+
+/* —— 十六进制兜底：浏览器不支持 light-dark() 时整体降级 —— */
+@supports not (color: light-dark(#fff, #000)) {
+  :root {
+    --bg: #FAF9F5; --bg-subtle: #F0EEE6; --surface: #FEFDFB;
+    --text: #28261F; --text-muted: #6B655B; --border: #E4E0D6;
+    --primary: #CC785C; --primary-hover: #B8674C; --primary-contrast: #FEFDFB;
+    --good: #4F7D58; --warn: #B98A3C; --bad: #B5503F;
+  }
+  :root[data-theme="dark"] {
+    --bg: #211F1B; --bg-subtle: #29261F; --surface: #2A2724;
+    --text: #EDEAE2; --text-muted: #A89F92; --border: #3A362F;
+    --primary: #DB8767; --primary-hover: #E89A7B; --primary-contrast: #1C1A16;
+  }
+}

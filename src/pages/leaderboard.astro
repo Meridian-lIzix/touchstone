@@ -1,0 +1,23 @@
+---
+import Base from '../layouts/Base.astro';
+import Leaderboard from '../components/Leaderboard.tsx';
+---
+
+<Base
+  title="排行榜 · 试金石 Touchstone"
+  description="按品类的 AI 模型排行榜，由用户成对盲选 + Elo 实时生成，附样本量与可信度。"
+>
+  <section class="mx-auto max-w-5xl px-6 pt-16 pb-8">
+    <p class="ts-eyebrow">Leaderboard · 排行榜</p>
+    <h1 class="mt-4 font-serif text-4xl font-semibold sm:text-5xl">排行榜</h1>
+    <p class="mt-4 max-w-[60ch] text-lg text-muted">
+      按品类的模型排名，用 <a href="/about#method" class="text-primary hover:underline">盲评数据</a> 撑着——不是拍脑袋排的。
+      去 <a href="/arena" class="text-primary hover:underline">盲评</a> 投几对，这里的分就会动。
+    </p>
+  </section>
+
+  <section class="mx-auto max-w-5xl px-6 pb-20">
+    {/* 排行榜实时读取后端聚合结果，因此客户端加载 React 岛组件 */}
+    <Leaderboard client:load />
+  </section>
+</Base>

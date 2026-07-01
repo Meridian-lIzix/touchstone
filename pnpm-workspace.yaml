@@ -1,0 +1,4 @@
+# pnpm 11：放行安装期构建脚本（Astro 编译依赖 esbuild；图片优化用 sharp）
+allowBuilds:
+  esbuild: true
+  sharp: true

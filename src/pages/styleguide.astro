@@ -1,0 +1,192 @@
+---
+import Base from '../layouts/Base.astro';
+
+// 设计系统页面直接读取 CSS 变量名，方便调试主题令牌
+const colors = [
+  { var: '--bg', role: '页面基底（暖奶白）' },
+  { var: '--bg-subtle', role: '次级底 / 占位' },
+  { var: '--surface', role: '卡片面' },
+  { var: '--text', role: '正文（暖近黑）' },
+  { var: '--text-muted', role: '次级文字' },
+  { var: '--border', role: '细描边' },
+  { var: '--primary', role: '珊瑚陶土 · 唯一主色', accent: true },
+  { var: '--primary-hover', role: '主色按下态' },
+];
+
+// 语义状态色独立展示，避免和主品牌色混用
+const semantic = [
+  { var: '--good', role: '正向 / 限免' },
+  { var: '--warn', role: '提醒 / 涨价' },
+  { var: '--bad', role: '风险 / 跑路' },
+];
+
+// 字阶样张用于核对标题、正文、弱化文字和数字字体
+const typeScale = [
+  { label: 'Display / H1', cls: 'font-serif font-semibold', size: 'clamp(2.5rem,6vw,4.5rem)', sample: '哪个 AI 真能打' },
+  { label: 'H2', cls: 'font-serif font-semibold', size: '2rem', sample: '当期榜单 · 本月' },
+  { label: 'H3', cls: 'font-serif font-semibold', size: '1.375rem', sample: '让它接手一个真项目' },
+  { label: 'Body', cls: 'font-sans', size: '1.0625rem', sample: '作品匿名上台，由你盲评。排行榜用贝叶斯评分撑着。' },
+  { label: 'Muted', cls: 'font-sans text-muted', size: '0.95rem', sample: '真实模型标签翻牌后揭晓。' },
+  { label: 'Mono / 数字', cls: 'ts-num', size: '1.0625rem', sample: '8.7 · 1,240 票 · #01' },
+];
+
+// 间距和圆角展示 Tailwind 约定，便于做页面时保持一致
+const spacing = [
+  { n: '1', px: 4 }, { n: '2', px: 8 }, { n: '3', px: 12 }, { n: '4', px: 16 },
+  { n: '6', px: 24 }, { n: '8', px: 32 }, { n: '12', px: 48 }, { n: '16', px: 64 },
+];
+const radii = [
+  { label: 'sm', cls: 'rounded-sm' }, { label: 'md', cls: 'rounded-md' },
+  { label: 'lg', cls: 'rounded-lg' }, { label: 'xl', cls: 'rounded-xl' },
+];
+---
+
+<Base title="设计系统 · 试金石 Touchstone" description="Touchstone 设计令牌预览：色彩、字体、间距、组件与动效。">
+  <section class="mx-auto max-w-7xl px-6 pt-16 pb-10">
+    <p class="ts-eyebrow">Design System · Style Guide</p>
+    <h1 class="mt-4 font-serif text-4xl font-semibold sm:text-5xl">设计系统预览</h1>
+    <p class="mt-4 max-w-[58ch] text-lg text-muted">
+      warm editorial minimalism —— 暖编辑型极简。全站唯一视觉方向。
+      点右上角图标切换深浅色，观察令牌的暗色适配（默认浅色，记住你的选择）。
+    </p>
+  </section>
+
+  {/* 色彩 */}
+  <section class="mx-auto max-w-7xl px-6 py-10">
+    <h2 class="border-b border-border pb-3 font-serif text-2xl font-semibold">色彩</h2>
+    <div class="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-4">
+      {colors.map((c) => (
+        <div class="ts-card overflow-hidden">
+          <div class="h-20 border-b border-border" style={`background:var(${c.var})`}></div>
+          <div class="p-3">
+            <code class="ts-num text-xs text-muted">{c.var}</code>
+            <p class:list={['mt-1 text-sm', c.accent ? 'text-primary font-medium' : '']}>{c.role}</p>
+          </div>
+        </div>
+      ))}
+    </div>
+    <div class="mt-4 grid grid-cols-3 gap-4 sm:max-w-md">
+      {semantic.map((c) => (
+        <div class="flex items-center gap-3">
+          <span class="h-7 w-7 shrink-0 rounded-md border border-border" style={`background:var(${c.var})`}></span>
+          <div class="leading-tight">
+            <code class="ts-num text-xs text-muted">{c.var}</code>
+            <p class="text-xs">{c.role}</p>
+          </div>
+        </div>
+      ))}
+    </div>
+    <p class="mt-6 text-sm text-muted">
+      珊瑚陶土只用于点睛（CTA / 强调 / 活跃态），绝不大面积铺。语义色低饱和，不破坏暖调。
+    </p>
+  </section>
+
+  {/* 字体 */}
+  <section class="mx-auto max-w-7xl px-6 py-10">
+    <h2 class="border-b border-border pb-3 font-serif text-2xl font-semibold">字体 & 排版</h2>
+    <p class="mt-4 text-sm text-muted">
+      标题衬线 Source Serif 4 / Noto Serif SC ·
+      正文 Inter / Noto Sans SC ·
+      数字 Geist Mono · 正文行高 1.7 / 阅读宽 ~68ch
+    </p>
+    <div class="mt-8 divide-y divide-border">
+      {typeScale.map((t) => (
+        <div class="flex flex-col gap-2 py-5 sm:flex-row sm:items-baseline sm:gap-8">
+          <div class="w-28 shrink-0">
+            <span class="ts-eyebrow">{t.label}</span>
+            <code class="ts-num mt-1 block text-xs text-muted">{t.size}</code>
+          </div>
+          <p class={t.cls} style={`font-size:${t.size};line-height:1.2`}>{t.sample}</p>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  {/* 间距 + 圆角 */}
+  <section class="mx-auto grid max-w-7xl gap-12 px-6 py-10 lg:grid-cols-2">
+    <div>
+      <h2 class="border-b border-border pb-3 font-serif text-2xl font-semibold">间距</h2>
+      <p class="mt-4 text-sm text-muted">4px 基数 · 8pt 节奏</p>
+      <div class="mt-6 space-y-2.5">
+        {spacing.map((s) => (
+          <div class="flex items-center gap-4">
+            <code class="ts-num w-14 shrink-0 text-xs text-muted">{s.n} · {s.px}</code>
+            <span class="h-4 rounded-sm bg-primary/80" style={`width:${s.px}px`}></span>
+          </div>
+        ))}
+      </div>
+    </div>
+    <div>
+      <h2 class="border-b border-border pb-3 font-serif text-2xl font-semibold">圆角 & 阴影</h2>
+      <p class="mt-4 text-sm text-muted">克制——4–8px 为主，最大 12px；阴影仅浮层用</p>
+      <div class="mt-6 flex flex-wrap gap-4">
+        {radii.map((r) => (
+          <div class="text-center">
+            <span class={`block h-16 w-16 border border-border bg-bg-subtle ${r.cls}`}></span>
+            <code class="ts-num mt-1 block text-xs text-muted">{r.label}</code>
+          </div>
+        ))}
+        <div class="text-center">
+          <span class="block h-16 w-16 rounded-lg bg-surface" style="box-shadow:var(--shadow-soft)"></span>
+          <code class="ts-num mt-1 block text-xs text-muted">soft</code>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {/* 组件 */}
+  <section class="mx-auto max-w-7xl px-6 py-10">
+    <h2 class="border-b border-border pb-3 font-serif text-2xl font-semibold">组件 & 状态</h2>
+    <div class="mt-8 grid gap-10 lg:grid-cols-2">
+      <div class="space-y-5">
+        <h3 class="ts-eyebrow">按钮</h3>
+        <div class="flex flex-wrap items-center gap-3">
+          <button class="ts-btn ts-btn-primary">主按钮</button>
+          <button class="ts-btn ts-btn-ghost">次按钮</button>
+          <button class="ts-btn ts-btn-primary opacity-50" disabled>禁用</button>
+          <a href="#" class="text-sm text-primary underline-offset-4 hover:underline">文字链接</a>
+        </div>
+        <p class="text-xs text-muted">悬停换深一档主色，按下轻微下沉 1px，焦点环为主色描边。</p>
+
+        <h3 class="ts-eyebrow pt-3">标签 / Chips</h3>
+        <div class="flex flex-wrap gap-2">
+          {['需梯子', '中文界面', '有免费额度', '订阅制'].map((m) => (
+            <span class="rounded-full border border-border px-2.5 py-0.5 text-xs text-muted">{m}</span>
+          ))}
+          <span class="ts-num rounded-md bg-bg-subtle px-2 py-0.5 text-xs font-medium text-primary">贝叶斯 8.7</span>
+        </div>
+      </div>
+
+      <div class="space-y-3">
+        <h3 class="ts-eyebrow">卡片（hover 抬升）</h3>
+        <article class="ts-card max-w-sm overflow-hidden transition-transform duration-300 hover:-translate-y-1">
+          <div class="flex aspect-[16/9] items-center justify-center border-b border-border bg-bg-subtle">
+            <span class="ts-eyebrow">封面 16:9</span>
+          </div>
+          <div class="p-5">
+            <span class="ts-eyebrow text-primary">AI 编程</span>
+            <h4 class="mt-2 font-serif text-xl font-semibold">让它接手一个真项目</h4>
+            <p class="mt-2 text-sm text-muted">补全很顺，重构翻车——边界比宣传里窄。</p>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  {/* 动效 */}
+  <section class="mx-auto max-w-7xl px-6 py-10 pb-24">
+    <h2 class="border-b border-border pb-3 font-serif text-2xl font-semibold">动效</h2>
+    <p class="mt-4 max-w-[58ch] text-sm text-muted">
+      一套基调——柔和弹簧 + 列表错位入场 + 平滑滚动。本页所有卡片即用错位入场；
+      复杂交互（盲评、可排序横评表）才上 <code class="ts-num">motion</code> 库。
+      全程尊重 <code class="ts-num">prefers-reduced-motion</code>：关闭动画偏好时一律静止。
+    </p>
+    <div class="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+      {[0, 1, 2, 3].map((i) => (
+        <div class="ts-card ts-rise flex h-20 items-center justify-center" style={`animation-delay:${i * 90}ms`}>
+          <span class="ts-num text-sm text-muted">stagger {i + 1}</span>
+        </div>
+      ))}
+    </div>
+  </section>
+</Base>

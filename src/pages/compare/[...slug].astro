@@ -1,0 +1,53 @@
+---
+import Base from '../../layouts/Base.astro';
+import { getCollection, render } from 'astro:content';
+import { articleLd, abs } from '../../lib/seo';
+import CompareTable from '../../components/CompareTable.tsx';
+
+// 每篇横评从 content 集合静态生成一个详情页
+export async function getStaticPaths() {
+  const items = await getCollection('comparisons', ({ data }) => !data.draft);
+  return items.map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
+}
+
+// 渲染 Markdown 正文，并把 frontmatter 表格数据交给 React 岛组件
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+const d = entry.data;
+const url = abs(`/compare/${entry.id}`, Astro.site);
+const dateStr = d.date.toISOString().slice(0, 10);
+
+// 横评按文章结构化数据处理，section 对应工具分类
+const ld = articleLd({
+  headline: d.title,
+  description: d.dek,
+  url,
+  datePublished: d.date.toISOString(),
+  section: d.category,
+});
+---
+
+<Base title={`${d.title} · 试金石 Touchstone`} description={d.dek} ogType="article" jsonLd={ld}>
+  <article class="mx-auto max-w-6xl px-6 pt-14 pb-20">
+    <a href="/compare" class="ts-eyebrow hover:text-primary">← 横向对比</a>
+
+    <div class="mt-5 flex flex-wrap items-center gap-2">
+      <span class="ts-eyebrow text-primary">{d.category}</span>
+      {d.sample && (
+        <span class="ts-eyebrow rounded-full border border-border px-2 py-0.5 text-muted" title="示例内容">示例内容</span>
+      )}
+      <span class="ts-num text-xs text-muted">更新于 {dateStr}</span>
+    </div>
+
+    <h1 class="mt-4 font-serif text-3xl font-semibold leading-tight sm:text-4xl">{d.title}</h1>
+    <p class="mt-4 max-w-[60ch] text-lg text-muted">{d.dek}</p>
+
+    <p class="mt-10 mb-3 ts-eyebrow text-muted">点列头按任意维度排序 ↕</p>
+    {/* 横评表需要客户端排序，所以只在可见时加载 React */}
+    <CompareTable client:visible columns={d.columns} tools={d.tools} />
+
+    <div class="prose mt-10">
+      <Content />
+    </div>
+  </article>
+</Base>

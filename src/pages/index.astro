@@ -1,0 +1,175 @@
+---
+import Base from '../layouts/Base.astro';
+import { getCollection } from 'astro:content';
+
+// 首页只取最新的可发布内容，避免草稿进入公开页面
+const reviews = (await getCollection('reviews', ({ data }) => !data.draft))
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
+  .slice(0, 3);
+const collections = (await getCollection('collections', ({ data }) => !data.draft))
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
+  .slice(0, 2);
+const news = (await getCollection('news', ({ data }) => !data.draft))
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
+  .slice(0, 4);
+
+// 当期榜单占位：后续接入真实排行榜 API 后替换这组静态数据
+const rankings = [
+  { rank: 1, name: '候选 A', score: '8.7', votes: '1,240' },
+  { rank: 2, name: '候选 B', score: '8.3', votes: '1,198' },
+  { rank: 3, name: '候选 C', score: '7.9', votes: '1,251' },
+];
+
+// 情报类型映射到语义色，新增类型时同步补这里
+const kindColor: Record<string, string> = {
+  限免: 'text-good',
+  涨价: 'text-warn',
+  新功能: 'text-primary',
+  跑路预警: 'text-bad',
+  发布: 'text-primary',
+  其它: 'text-muted',
+};
+
+// 首页列表只展示月日，详情页再展示完整日期
+const md = (d: Date) => `${String(d.getMonth() + 1).padStart(2, '0')}·${String(d.getDate()).padStart(2, '0')}`;
+
+// 测评卡片摘要把几个高频决策点压成标签
+const reviewMeta = (d: { pricing: string; needsVpn: boolean; chinese: string }) => [
+  d.pricing,
+  d.needsVpn ? '需梯子' : '免梯子',
+  `中文${d.chinese}`,
+];
+---
+
+<Base>
+  {/* —— 主视觉 —— */}
+  <section class="mx-auto max-w-7xl px-6 pt-20 pb-16 sm:pt-28">
+    <p class="ts-eyebrow ts-rise">AI 工具测评 · 盲评驱动</p>
+    <h1
+      class="mt-5 max-w-[16ch] font-serif font-semibold tracking-tight ts-rise"
+      style="font-size:clamp(2.5rem,6vw,4.5rem);animation-delay:60ms"
+    >
+      哪个 AI 真能打，<br />让盲评数据说话。
+    </h1>
+    <p class="mt-6 max-w-[52ch] text-lg text-muted ts-rise" style="animation-delay:120ms">
+      同一套提示词喂给不同模型，作品匿名上台，由你盲评。排行榜用贝叶斯评分撑着——不是某个博主一张嘴的主观吹捧。
+    </p>
+    <div class="mt-9 flex flex-wrap items-center gap-3 ts-rise" style="animation-delay:180ms">
+      <a href="/leaderboard" class="ts-btn ts-btn-primary">
+        看本月榜单
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M5 12h14m-6-6 6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </a>
+      <a href="/reviews" class="ts-btn ts-btn-ghost">读最新测评</a>
+      <a href="/about#method" class="ml-1 text-sm text-muted underline-offset-4 hover:text-primary hover:underline">
+        我们怎么评的？
+      </a>
+    </div>
+  </section>
+
+  {/* —— 当期榜单精选（第二阶段数据）—— */}
+  <section class="mx-auto max-w-7xl px-6 py-14">
+    <div class="flex items-end justify-between gap-4 border-b border-border pb-4">
+      <h2 class="font-serif text-2xl font-semibold">当期榜单 · AI 修图 / 本月</h2>
+      <span class="ts-eyebrow hidden shrink-0 sm:block">示例结构 · 数据 Phase 2 接入</span>
+    </div>
+    <div class="mt-8 grid gap-5 md:grid-cols-3">
+      {rankings.map((r, i) => (
+        <article class="ts-card group overflow-hidden p-5 transition-transform duration-300 hover:-translate-y-1 ts-rise" style={`animation-delay:${i * 70}ms`}>
+          <div class="flex items-start justify-between">
+            <span class="ts-num font-serif text-4xl font-semibold leading-none">{r.rank}</span>
+            <span class="ts-num rounded-md bg-bg-subtle px-2 py-1 text-sm font-medium text-primary">{r.score}</span>
+          </div>
+          <div class="mt-4 flex aspect-[4/3] items-center justify-center rounded-lg border border-dashed border-border bg-bg-subtle">
+            <span class="ts-eyebrow">封面 4:3</span>
+          </div>
+          <div class="mt-4 flex items-center justify-between text-sm">
+            <span class="font-medium">{r.name}</span>
+            <span class="text-muted">盲评样本 <span class="ts-num">{r.votes}</span></span>
+          </div>
+          <p class="mt-1 text-xs text-muted">真实模型标签翻牌后揭晓</p>
+        </article>
+      ))}
+    </div>
+  </section>
+
+  {/* —— 最新测评 —— */}
+  <section class="mx-auto max-w-7xl px-6 py-14">
+    <div class="flex items-end justify-between gap-4 border-b border-border pb-4">
+      <h2 class="font-serif text-2xl font-semibold">最新测评</h2>
+      <a href="/reviews" class="ts-eyebrow shrink-0 hover:text-primary">全部 →</a>
+    </div>
+    <div class="mt-8 grid gap-6 md:grid-cols-3">
+      {reviews.map((r, i) => (
+        <a
+          href={`/reviews/${r.id}`}
+          class="ts-card group flex flex-col overflow-hidden transition-transform duration-300 hover:-translate-y-1 ts-rise"
+          style={`animation-delay:${i * 70}ms`}
+        >
+          <div class="flex aspect-[16/9] items-center justify-center border-b border-border bg-bg-subtle">
+            <span class="ts-eyebrow">封面 16:9</span>
+          </div>
+          <div class="flex flex-1 flex-col p-5">
+            <span class="ts-eyebrow text-primary">{r.data.category}</span>
+            <h3 class="mt-2 font-serif text-xl font-semibold leading-snug transition-colors group-hover:text-primary">
+              {r.data.title}
+            </h3>
+            <p class="mt-2 line-clamp-2 text-sm text-muted">{r.data.dek}</p>
+            <div class="mt-4 flex flex-wrap gap-2 pt-3">
+              {reviewMeta(r.data).map((m) => (
+                <span class="rounded-full border border-border px-2.5 py-0.5 text-xs text-muted">{m}</span>
+              ))}
+            </div>
+          </div>
+        </a>
+      ))}
+    </div>
+  </section>
+
+  {/* —— 场景合集 + 情报流 —— */}
+  <section class="mx-auto grid max-w-7xl gap-12 px-6 py-14 lg:grid-cols-5">
+    <div class="lg:col-span-3">
+      <div class="flex items-end justify-between gap-4 border-b border-border pb-4">
+        <h2 class="font-serif text-2xl font-semibold">场景合集</h2>
+        <a href="/collections" class="ts-eyebrow shrink-0 hover:text-primary">全部 →</a>
+      </div>
+      <div class="mt-8 grid gap-6 sm:grid-cols-2">
+        {collections.map((c, i) => (
+          <a
+            href={`/collections/${c.id}`}
+            class="ts-card group flex flex-col justify-between gap-6 p-6 transition-transform duration-300 hover:-translate-y-1 ts-rise"
+            style={`animation-delay:${i * 70}ms`}
+          >
+            <div>
+              <span class="ts-eyebrow">合集 · {c.data.items.length} 款</span>
+              <h3 class="mt-2 font-serif text-xl font-semibold leading-snug transition-colors group-hover:text-primary">
+                {c.data.title}
+              </h3>
+              <p class="mt-2 text-sm text-muted">{c.data.dek}</p>
+            </div>
+            <span class="ts-eyebrow text-primary">{c.data.scenario} →</span>
+          </a>
+        ))}
+      </div>
+    </div>
+
+    <div class="lg:col-span-2">
+      <div class="flex items-end justify-between gap-4 border-b border-border pb-4">
+        <h2 class="font-serif text-2xl font-semibold">AI 情报</h2>
+        <a href="/news" class="ts-eyebrow shrink-0 hover:text-primary">全部 →</a>
+      </div>
+      <ul class="mt-6 divide-y divide-border">
+        {news.map((n) => (
+          <li>
+            <a href="/news" class="group flex items-baseline gap-3 py-3.5">
+              <span class="ts-num shrink-0 text-sm text-muted">{md(n.data.date)}</span>
+              <span class={`ts-eyebrow shrink-0 ${kindColor[n.data.kind] ?? 'text-muted'}`}>{n.data.kind}</span>
+              <span class="text-sm leading-snug transition-colors group-hover:text-primary">{n.data.title}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+</Base>

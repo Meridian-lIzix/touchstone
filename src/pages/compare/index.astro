@@ -1,0 +1,53 @@
+---
+import Base from '../../layouts/Base.astro';
+import { getCollection } from 'astro:content';
+import { itemListLd, abs } from '../../lib/seo';
+
+// 横评列表按更新时间倒序，只公开非草稿内容
+const items = (await getCollection('comparisons', ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf(),
+);
+
+// 列表页结构化数据指向每一篇横评详情
+const ld = itemListLd({
+  name: '横向对比',
+  url: abs('/compare', Astro.site),
+  items: items.map((c) => ({ name: c.data.title, url: abs(`/compare/${c.id}`, Astro.site) })),
+});
+---
+
+<Base
+  title="横向对比 · 试金石 Touchstone"
+  description="同类 AI 工具多维横评：价格、中文、是否需要梯子、核心能力，一张表看清差别。"
+  jsonLd={ld}
+>
+  <section class="mx-auto max-w-7xl px-6 pt-16 pb-10">
+    <p class="ts-eyebrow">Compare · 横向对比</p>
+    <h1 class="mt-4 font-serif text-4xl font-semibold sm:text-5xl">横向对比</h1>
+    <p class="mt-4 max-w-[58ch] text-lg text-muted">
+      同类工具按统一维度横着摆——挑工具前先想清楚你最在意哪一列，再去看谁第一。
+    </p>
+  </section>
+
+  <section class="mx-auto max-w-7xl px-6 pb-20">
+    <div class="grid gap-6 sm:grid-cols-2">
+      {items.map((c, i) => (
+        <a
+          href={`/compare/${c.id}`}
+          class="ts-card group flex flex-col gap-3 p-6 transition-transform duration-300 hover:-translate-y-1 ts-rise"
+          style={`animation-delay:${i * 60}ms`}
+        >
+          <div class="flex items-center gap-2">
+            <span class="ts-eyebrow text-primary">{c.data.category}</span>
+            {c.data.sample && <span class="ts-eyebrow text-muted">· 示例</span>}
+          </div>
+          <h2 class="font-serif text-xl font-semibold leading-snug transition-colors group-hover:text-primary">
+            {c.data.title}
+          </h2>
+          <p class="text-sm text-muted">{c.data.dek}</p>
+          <span class="ts-eyebrow mt-1 text-muted">{c.data.tools.length} 款 · {c.data.columns.length} 维 →</span>
+        </a>
+      ))}
+    </div>
+  </section>
+</Base>

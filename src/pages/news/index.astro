@@ -1,0 +1,68 @@
+---
+import Base from '../../layouts/Base.astro';
+import { getCollection } from 'astro:content';
+import { itemListLd, abs } from '../../lib/seo';
+
+// 情报流暂时只有列表页，没有单条详情；外链内容直接跳源站
+const items = (await getCollection('news', ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf(),
+);
+
+// 不同情报类型用语义色辅助扫读
+const kindColor: Record<string, string> = {
+  限免: 'text-good',
+  涨价: 'text-warn',
+  新功能: 'text-primary',
+  跑路预警: 'text-bad',
+  发布: 'text-primary',
+  其它: 'text-muted',
+};
+
+// 列表日期压缩成月日，减少信息噪声
+const md = (d: Date) => `${String(d.getMonth() + 1).padStart(2, '0')}·${String(d.getDate()).padStart(2, '0')}`;
+
+// 有原文链接时 ItemList 指向源站，否则指向本站情报页
+const ld = itemListLd({
+  name: 'AI 情报',
+  url: abs('/news', Astro.site),
+  items: items.map((n) => ({ name: n.data.title, url: n.data.link ?? abs('/news', Astro.site) })),
+});
+---
+
+<Base
+  title="AI 情报 · 试金石 Touchstone"
+  description="AI 工具的限免、涨价、新功能与跑路预警——值得回访的那些动态。"
+  jsonLd={ld}
+>
+  <section class="mx-auto max-w-4xl px-6 pt-16 pb-10">
+    <p class="ts-eyebrow">News · AI 情报</p>
+    <h1 class="mt-4 font-serif text-4xl font-semibold sm:text-5xl">AI 情报</h1>
+    <p class="mt-4 text-lg text-muted">限免、涨价、新功能、跑路预警——只留值得你花十秒看一眼的。</p>
+  </section>
+
+  <section class="mx-auto max-w-4xl px-6 pb-20">
+    <ul class="divide-y divide-border border-t border-border">
+      {items.map((n) => {
+        const inner = (
+          <div class="group flex items-baseline gap-3 py-4">
+            <span class="ts-num shrink-0 text-sm text-muted">{md(n.data.date)}</span>
+            <span class={`ts-eyebrow shrink-0 ${kindColor[n.data.kind] ?? 'text-muted'}`}>{n.data.kind}</span>
+            <div class="min-w-0">
+              <p class="leading-snug transition-colors group-hover:text-primary">{n.data.title}</p>
+              {n.data.dek && <p class="mt-1 text-sm text-muted">{n.data.dek}</p>}
+            </div>
+          </div>
+        );
+        return (
+          <li>
+            {n.data.link ? (
+              <a href={n.data.link} target="_blank" rel="noopener">{inner}</a>
+            ) : (
+              inner
+            )}
+          </li>
+        );
+      })}
+    </ul>
+  </section>
+</Base>

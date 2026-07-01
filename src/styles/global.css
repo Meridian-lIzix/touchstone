@@ -1,0 +1,169 @@
+@import "tailwindcss";
+@import "./tokens.css";
+
+/* 把语义令牌接进 Tailwind（inline = 工具类直接引用 var，主题切换实时生效）
+   生成 bg-bg / bg-surface / text-text / text-muted / border-border / bg-primary 等 */
+@theme inline {
+  --color-bg: var(--bg);
+  --color-bg-subtle: var(--bg-subtle);
+  --color-surface: var(--surface);
+  --color-text: var(--text);
+  --color-muted: var(--text-muted);
+  --color-border: var(--border);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-contrast: var(--primary-contrast);
+  --color-good: var(--good);
+  --color-warn: var(--warn);
+  --color-bad: var(--bad);
+
+  --font-sans: var(--font-sans);
+  --font-serif: var(--font-serif);
+  --font-mono: var(--font-mono);
+  --font-wordmark: var(--font-wordmark);
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    tab-size: 4;
+    /* 滚动条槽位常驻 → 全站宽度永远恒定 → 翻页零位移（纯 CSS，无 JS 时序问题）
+       轨道透明：短页无可滚内容时只剩透明轨道＝不可见，不露空槽；长页才显示暖色滑块 */
+    overflow-y: scroll;
+  }
+  ::-webkit-scrollbar {
+    width: 11px;
+    height: 11px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 999px;
+    border: 3px solid var(--bg);
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--text-muted);
+  }
+  /* Firefox（不认 webkit 伪元素）：标准属性，轨道透明 */
+  @supports not selector(::-webkit-scrollbar) {
+    html {
+      scrollbar-width: thin;
+      scrollbar-color: var(--border) transparent;
+    }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    html { scroll-behavior: smooth; }
+  }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-optical-sizing: auto;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  h1, h2, h3, h4 {
+    font-family: var(--font-serif);
+    font-optical-sizing: auto;
+    text-wrap: balance;
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+  }
+  p { text-wrap: pretty; }
+  a { color: inherit; text-decoration: none; }
+  :focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+    border-radius: 3px;
+  }
+  ::selection { background: var(--primary); color: var(--primary-contrast); }
+}
+
+/* —— 签名质感：极轻颗粒噪点（唯一一处装饰，去塑料感）—— */
+.grain {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.04;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+:root[data-theme="dark"] .grain {
+  mix-blend-mode: screen;
+  opacity: 0.05;
+}
+
+/* 内容压在颗粒之上——但别动 header：它需要 position: sticky 常驻顶部，
+   之前用 :not(.grain) 一刀切会把 sticky 覆盖成 relative，导致导航栏滚走 */
+body > main,
+body > footer {
+  position: relative;
+  z-index: 1;
+}
+
+/* —— 共享原子：编辑型按钮 / 卡片（克制，供 .astro 复用）—— */
+@layer components {
+  .ts-btn {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    padding: 0.6rem 1.1rem; border-radius: 0.5rem;
+    font-size: 0.95rem; font-weight: 500;
+    transition: background-color 0.25s ease, color 0.25s ease,
+                border-color 0.25s ease, transform 0.25s ease;
+  }
+  .ts-btn-primary {
+    background: var(--primary); color: var(--primary-contrast);
+  }
+  .ts-btn-primary:hover { background: var(--primary-hover); }
+  .ts-btn-primary:active { transform: translateY(1px); }
+  .ts-btn-ghost {
+    border: 1px solid var(--border); color: var(--text);
+    background: transparent;
+  }
+  .ts-btn-ghost:hover { border-color: var(--primary); color: var(--primary); }
+
+  .ts-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+  }
+  .ts-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.72rem; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  .ts-num { font-family: var(--font-mono); font-feature-settings: "tnum" 1; }
+
+  /* 列表错位入场（仅在允许动效时）*/
+  @media (prefers-reduced-motion: no-preference) {
+    .ts-rise {
+      opacity: 0; transform: translateY(12px);
+      animation: ts-rise-in 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+  }
+  @keyframes ts-rise-in { to { opacity: 1; transform: none; } }
+}
+
+/* —— 文章正文（Markdown 渲染）—— */
+.prose { max-width: 68ch; }
+.prose > :first-child { margin-top: 0; }
+.prose h2 { font-family: var(--font-serif); font-size: 1.55rem; margin-top: 2.2rem; margin-bottom: 0.5rem; letter-spacing: -0.01em; }
+.prose h3 { font-family: var(--font-serif); font-size: 1.2rem; margin-top: 1.8rem; margin-bottom: 0.4rem; }
+.prose p { margin: 1rem 0; }
+.prose ul, .prose ol { margin: 1rem 0; padding-left: 1.3rem; }
+.prose ul { list-style: disc; }
+.prose ol { list-style: decimal; }
+.prose li { margin: 0.3rem 0; }
+.prose a { color: var(--primary); text-decoration: underline; text-underline-offset: 3px; }
+.prose strong { font-weight: 600; }
+.prose code { font-family: var(--font-mono); font-size: 0.9em; background: var(--bg-subtle); padding: 0.1em 0.35em; border-radius: 4px; }
+.prose blockquote { border-left: 2px solid var(--primary); padding: 0.2rem 0 0.2rem 1rem; margin: 1.5rem 0; color: var(--text-muted); }
+.prose hr { border: 0; border-top: 1px solid var(--border); margin: 2rem 0; }
+
+/* —— 导航当前页高亮（aria-current 由服务端首屏 + 客户端路由后脚本同步）—— */
+.ts-nav-link[aria-current="page"] { color: var(--text); }
+.ts-nav-link[aria-current="page"] .ts-nav-underline { width: 100%; }
+.ts-mobile-link[aria-current="page"] { color: var(--primary); }

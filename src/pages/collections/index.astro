@@ -1,0 +1,53 @@
+---
+import Base from '../../layouts/Base.astro';
+import { getCollection } from 'astro:content';
+import { itemListLd, abs } from '../../lib/seo';
+
+// 场景合集列表按更新时间倒序，只展示已发布内容
+const items = (await getCollection('collections', ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf(),
+);
+
+// 列表页结构化数据列出所有合集详情页
+const ld = itemListLd({
+  name: '场景合集',
+  url: abs('/collections', Astro.site),
+  items: items.map((c) => ({ name: c.data.title, url: abs(`/collections/${c.id}`, Astro.site) })),
+});
+---
+
+<Base
+  title="场景合集 · 试金石 Touchstone"
+  description="按「我要干什么」组织的 AI 工具链：从一个任务出发，挑能直接用、串得起来的几款。"
+  jsonLd={ld}
+>
+  <section class="mx-auto max-w-7xl px-6 pt-16 pb-10">
+    <p class="ts-eyebrow">Collections · 场景合集</p>
+    <h1 class="mt-4 font-serif text-4xl font-semibold sm:text-5xl">场景合集</h1>
+    <p class="mt-4 max-w-[58ch] text-lg text-muted">
+      不按工具分类，按「我要干什么」组织。从一个具体任务出发，挑能直接用、串得起来的那几款。
+    </p>
+  </section>
+
+  <section class="mx-auto max-w-7xl px-6 pb-20">
+    <div class="grid gap-6 sm:grid-cols-2">
+      {items.map((c, i) => (
+        <a
+          href={`/collections/${c.id}`}
+          class="ts-card group flex flex-col gap-3 p-6 transition-transform duration-300 hover:-translate-y-1 ts-rise"
+          style={`animation-delay:${i * 60}ms`}
+        >
+          <div class="flex items-center gap-2">
+            <span class="ts-eyebrow">合集 · {c.data.items.length} 款</span>
+            {c.data.sample && <span class="ts-eyebrow text-muted">· 示例</span>}
+          </div>
+          <h2 class="font-serif text-xl font-semibold leading-snug transition-colors group-hover:text-primary">
+            {c.data.title}
+          </h2>
+          <p class="text-sm text-muted">{c.data.dek}</p>
+          <span class="ts-eyebrow mt-1 text-primary">{c.data.scenario} →</span>
+        </a>
+      ))}
+    </div>
+  </section>
+</Base>

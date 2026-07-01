@@ -1,0 +1,84 @@
+---
+import Base from '../layouts/Base.astro';
+import { abs } from '../lib/seo';
+
+// 方法论步骤是关于页的核心内容，保持为结构化数组便于调整顺序
+const steps = [
+  { n: 1, t: '站长亲自上手', d: '每个工具都真用过：记录实测体验、踩过的坑、绕过去的办法——不是参数搬运。' },
+  { n: 2, t: '匿名盲评', d: '同一套提示词喂给不同模型，作品匿名上台。用户只选「更好的那个」，看不到品牌。' },
+  { n: 3, t: '数据排行', d: '排行榜用贝叶斯均值 / Elo，小样本被拉回中枢，恶意噪声影响随票数衰减——一两个极端票冲不动榜。' },
+  { n: 4, t: '最后翻牌', d: '评测结束前不显示真实模型标签，杜绝「因为是某大厂所以好」的品牌滤镜。' },
+];
+
+// 关于页使用 Organization 结构化数据，向搜索引擎声明站点主体
+const ld = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: '试金石 Touchstone',
+  url: abs('/', Astro.site),
+  description: '站长实测、用户盲评、贝叶斯排行的中文 AI 工具测评媒体。',
+};
+---
+
+<Base
+  title="关于 · 试金石 Touchstone"
+  description="试金石是一本有数据撑腰、有态度的中文 AI 工具数字杂志。这里讲清楚我们是谁、怎么评、为什么可信。"
+  jsonLd={ld}
+>
+  <section class="mx-auto max-w-4xl px-6 pt-20 pb-10">
+    <p class="ts-eyebrow">About · 关于</p>
+    <h1 class="mt-4 font-serif text-4xl font-semibold leading-tight sm:text-5xl">
+      卖判断，不卖链接。
+    </h1>
+    <div class="prose mt-6 text-lg">
+      <p>
+        市面上不缺「AI 工具大全」——点进去一排图标，点了就跳走，看完你还是不知道哪个值得用。
+        <strong>试金石不做这个。</strong>
+      </p>
+      <p>
+        我们更像「AI 界的什么值得买 / 少数派」：卖的是判断，不是链接。每个工具都有人真用过，
+        每个排名背后都有真实盲评数据撑着——而不是某个博主的一张嘴。
+      </p>
+    </div>
+  </section>
+
+  <section id="method" class="mx-auto max-w-6xl scroll-mt-20 px-6 py-14">
+    <div class="border-b border-border pb-4">
+      <p class="ts-eyebrow">Methodology</p>
+      <h2 class="mt-2 font-serif text-3xl font-semibold">我们怎么评的</h2>
+    </div>
+    <div class="mt-8 grid gap-5 sm:grid-cols-2">
+      {steps.map((s) => (
+        <div class="ts-card flex gap-4 p-6">
+          <span class="ts-num font-serif text-3xl font-semibold leading-none text-primary">{s.n}</span>
+          <div>
+            <h3 class="font-serif text-lg font-semibold">{s.t}</h3>
+            <p class="mt-1.5 text-sm text-muted">{s.d}</p>
+          </div>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <section class="mx-auto max-w-4xl px-6 py-14">
+    <h2 class="border-b border-border pb-4 font-serif text-2xl font-semibold">为什么这套数据可信</h2>
+    <div class="prose mt-6">
+      <ul>
+        <li><strong>模型标签 100% 可信</strong>：所有作品由站长离线生成后上传，每条都带真实模型标签（对用户隐藏到翻牌）。没有用户造假的空间。</li>
+        <li><strong>小样本不被极端票带偏</strong>：贝叶斯均值把票少的作品拉回全站中枢，噪声影响随样本量衰减；成对盲选则用 Elo / Bradley-Terry，同样抗噪。</li>
+        <li><strong>本站不对公众提供生成式 AI 服务</strong>：只做作品展示 + 盲评——是内容媒体，不是 AI 工具商。</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="mx-auto max-w-4xl px-6 py-14 pb-24">
+    <h2 class="border-b border-border pb-4 font-serif text-2xl font-semibold">我们不做什么</h2>
+    <div class="prose mt-6">
+      <ul>
+        <li>不做点了就跳走的网址导航站。</li>
+        <li>不靠营销腔吹捧——该说短板就说短板。</li>
+        <li>不收钱改排名；如有商业合作，会在页面上明确标注。</li>
+      </ul>
+    </div>
+  </section>
+</Base>

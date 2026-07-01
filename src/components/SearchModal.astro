@@ -1,0 +1,222 @@
+---
+// 站内搜索弹窗：直接调用 Pagefind 的 JS API（/pagefind/pagefind.js），用自有 UI 渲染结果
+// 不用 PagefindUI 组件（其 Svelte 作用域和 all:unset 重置在模态里布局不稳）
+// 索引在 pnpm build 时生成；改内容后需重新 build 才会刷新搜索结果
+---
+
+<dialog id="ts-search" transition:persist class="ts-search" aria-label="站内搜索">
+  <div class="ts-search__bar">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.7"></circle>
+      <path d="m20 20-3.2-3.2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"></path>
+    </svg>
+    <input
+      id="ts-search-input"
+      class="ts-search__input"
+      type="text"
+      placeholder="搜测评 / 横评 / 合集 / 情报…"
+      autocomplete="off"
+      autocapitalize="off"
+      spellcheck="false"
+      aria-label="站内搜索"
+    />
+    <button id="ts-search-close" type="button" class="ts-search__esc" aria-label="关闭搜索">ESC</button>
+  </div>
+  <div id="ts-search-results" class="ts-search__results" role="listbox" aria-label="搜索结果"></div>
+</dialog>
+
+<style is:global>
+  /* 弹窗样式放全局作用域，保证 dialog 伪元素和动态搜索结果都能命中 */
+  .ts-search[open] {
+    display: flex;
+    flex-direction: column;
+  }
+  .ts-search {
+    width: min(640px, 92vw);
+    max-height: 78vh;
+    margin: 9vh auto auto;
+    padding: 0;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: var(--surface);
+    color: var(--text);
+    box-shadow: var(--shadow-soft);
+    overflow: hidden;
+  }
+  .ts-search::backdrop {
+    background: light-dark(oklch(0.22 0.01 60 / 0.35), oklch(0 0 0 / 0.55));
+    backdrop-filter: blur(2px);
+  }
+  .ts-search__bar {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.85rem 1rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-muted);
+  }
+  .ts-search__input {
+    flex: 1;
+    min-width: 0;
+    border: 0;
+    background: transparent;
+    outline: none;
+    font-size: 1.05rem;
+    color: var(--text);
+    font-family: var(--font-sans);
+  }
+  .ts-search__input::placeholder {
+    color: var(--text-muted);
+  }
+  .ts-search__esc {
+    flex-shrink: 0;
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.18rem 0.42rem;
+    cursor: pointer;
+    transition: color 0.2s ease, border-color 0.2s ease;
+  }
+  .ts-search__esc:hover {
+    color: var(--primary);
+    border-color: var(--primary);
+  }
+  .ts-search__results {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 0.4rem;
+  }
+  .ts-search__hit {
+    display: block;
+    padding: 0.7rem 0.8rem;
+    border-radius: 10px;
+    transition: background-color 0.15s ease;
+  }
+  .ts-search__hit:hover {
+    background: var(--bg-subtle);
+  }
+  .ts-search__hit-title {
+    display: block;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .ts-search__hit-excerpt {
+    display: block;
+    margin-top: 0.2rem;
+    font-size: 0.875rem;
+    line-height: 1.55;
+    color: var(--text-muted);
+  }
+  .ts-search__hit-excerpt mark {
+    background: transparent;
+    color: var(--primary);
+    font-weight: 600;
+  }
+  .ts-search__empty {
+    padding: 2.2rem 1rem;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.95rem;
+  }
+</style>
+
+<script is:inline>
+  (() => {
+    // SearchModal 持久化存在，使用自定义标记避免重复绑定事件
+    const dlg = document.getElementById('ts-search');
+    if (!dlg || dlg.__wired) return;
+    dlg.__wired = true;
+    const input = document.getElementById('ts-search-input');
+    const box = document.getElementById('ts-search-results');
+
+    let pf = null;
+
+    // Pagefind 包只在第一次搜索时加载，减少普通页面首屏负担
+    const getPf = async () => {
+      if (!pf) pf = await import('/pagefind/pagefind.js');
+      return pf;
+    };
+
+    // 搜索词会拼进 innerHTML，先做最小 HTML 转义
+    const esc = (s) =>
+      String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+    let seq = 0;
+
+    // seq 用来丢弃过期搜索结果，避免慢请求覆盖新输入
+    const run = async (q) => {
+      const mine = ++seq;
+      if (!q) {
+        box.innerHTML = '';
+        return;
+      }
+      let p;
+      try {
+        p = await getPf();
+      } catch (e) {
+        box.innerHTML = '<p class="ts-search__empty">搜索索引未就绪（本地需先 pnpm build）</p>';
+        return;
+      }
+      const r = await p.search(q);
+      if (mine !== seq) return;
+      const data = await Promise.all(r.results.slice(0, 12).map((x) => x.data()));
+      if (mine !== seq) return;
+      if (!data.length) {
+        box.innerHTML = '<p class="ts-search__empty">没找到「' + esc(q) + '」相关内容</p>';
+        return;
+      }
+      box.innerHTML = data
+        .map(
+          (d) =>
+            '<a class="ts-search__hit" href="' +
+            d.url +
+            '"><span class="ts-search__hit-title">' +
+            esc((d.meta && d.meta.title) || d.url) +
+            '</span><span class="ts-search__hit-excerpt">' +
+            (d.excerpt || '') +
+            '</span></a>',
+        )
+        .join('');
+    };
+
+    let t;
+
+    // 输入防抖，减少 Pagefind 搜索频率
+    input.addEventListener('input', () => {
+      clearTimeout(t);
+      t = setTimeout(() => run(input.value.trim()), 160);
+    });
+
+    // 打开后稍等一帧聚焦，确保 dialog 已经进入可聚焦状态
+    const open = () => {
+      if (!dlg.open) {
+        dlg.showModal();
+        setTimeout(() => input.focus(), 30);
+      }
+    };
+    const close = () => dlg.open && dlg.close();
+
+    // 支持按钮点击、快捷键、点遮罩和点结果后关闭
+    document.addEventListener('click', (e) => {
+      if (e.target.closest('#search-open')) open();
+      else if (e.target.closest('#ts-search-close')) close();
+    });
+    document.addEventListener('keydown', (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        dlg.open ? close() : open();
+      }
+    });
+    dlg.addEventListener('click', (e) => {
+      if (e.target === dlg) close();
+    });
+    box.addEventListener('click', (e) => {
+      if (e.target.closest('a')) close();
+    });
+  })();
+</script>

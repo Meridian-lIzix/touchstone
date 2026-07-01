@@ -1,0 +1,66 @@
+---
+// 页脚分栏链接集中维护，避免多个模板里散落同一批入口
+const cols = [
+  {
+    title: '内容',
+    links: [
+      { label: '工具测评', href: '/reviews' },
+      { label: '横向对比', href: '/compare' },
+      { label: '场景合集', href: '/collections' },
+      { label: 'AI 情报', href: '/news' },
+    ],
+  },
+  {
+    title: '数据',
+    links: [
+      { label: '盲评 Arena', href: '/arena' },
+      { label: '排行榜', href: '/leaderboard' },
+    ],
+  },
+  {
+    title: '关于',
+    links: [
+      { label: '品牌故事', href: '/about' },
+      { label: '评测方法论', href: '/about#method' },
+    ],
+  },
+];
+---
+
+<footer class="mt-28 border-t border-border">
+  {/* 左侧品牌简介 + 右侧三组站内链接 */}
+  <div class="mx-auto grid max-w-7xl gap-10 px-6 py-14 text-sm sm:grid-cols-2 lg:grid-cols-4">
+    <div class="space-y-3">
+      <div class="flex items-baseline gap-2">
+        <span class="font-serif text-lg font-semibold">试金石</span>
+        <span class="ts-eyebrow">Touchstone</span>
+      </div>
+      <p class="max-w-[30ch] text-muted">
+        站长实测、用户盲评、数据排行的中文 AI 工具测评。卖判断，不卖链接。
+      </p>
+    </div>
+
+    {cols.map((col) => (
+      <div class="space-y-3">
+        <h4 class="ts-eyebrow">{col.title}</h4>
+        <ul class="space-y-2">
+          {col.links.map((l) => (
+            <li>
+              <a href={l.href} class="text-muted transition-colors hover:text-primary">
+                {l.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    ))}
+  </div>
+
+  {/* 备案号上线前保留占位，正式发布时替换 */}
+  <div class="border-t border-border">
+    <div class="mx-auto flex max-w-7xl flex-col justify-between gap-2 px-6 py-5 text-xs text-muted sm:flex-row">
+      <span>© 2026 试金石 Touchstone</span>
+      <span class="ts-eyebrow">ICP 备案号待补 · 上线前办理</span>
+    </div>
+  </div>
+</footer>

@@ -1,0 +1,34 @@
+# Touchstone — keep build artifacts out of the vault auto-backup
+node_modules/
+dist/
+.astro/
+
+# arena 后端本地数据库（SQLite）
+server/*.db
+server/*.db-*
+server/*.bak
+
+# agent working dirs
+.agents/
+.codex/
+
+# 顶层 markdown 默认只留本地：instructions.md、以及所有 "* 本地.md"（含 vault 双链的源文件）不上传。
+# 下方显式放行要共享给团队的文档；src/content 下的内容 .md 不受影响，照常跟踪。
+/*.md
+!/README.md
+!/Touchstone 架构.md
+!/Touchstone 设计系统.md
+!/Touchstone Arena 机制.md
+!/Touchstone 决策日志.md
+!/Touchstone MOC.md
+!/Touchstone 待办.md
+
+# logs / os / editor
+*.log
+.DS_Store
+Thumbs.db
+
+# env
+.env
+.env.*
+!.env.example

@@ -1,0 +1,34 @@
+---
+// 深浅色切换：默认浅色，点击后写入 localStorage 记住你的选择
+---
+<button
+  id="theme-toggle"
+  type="button"
+  class="ts-btn ts-btn-ghost !h-10 !w-10 !justify-center !p-0"
+  aria-label="切换深浅色主题"
+  title="切换深浅色"
+>
+  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6" />
+    <path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor" />
+  </svg>
+</button>
+<script is:inline>
+  (() => {
+    // 布局层已在首屏提前应用主题，这里只负责响应用户点击
+    const btn = document.getElementById('theme-toggle');
+    if (!btn) return;
+    btn.addEventListener('click', () => {
+      const root = document.documentElement;
+      // 未设置时按浅色处理，不跟随系统主题
+      const effective = root.getAttribute('data-theme') || 'light';
+      const next = effective === 'dark' ? 'light' : 'dark';
+      root.setAttribute('data-theme', next);
+      root.style.colorScheme = next;
+      try {
+        // 写入失败不影响本次切换，只是下次访问不会记住选择
+        localStorage.setItem('ts-theme', next);
+      } catch (e) {}
+    });
+  })();
+</script>

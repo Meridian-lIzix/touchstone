@@ -1,0 +1,115 @@
+---
+import '@fontsource-variable/source-serif-4';
+import '@fontsource-variable/inter';
+import '@fontsource-variable/hanken-grotesk';
+import '@fontsource/geist-mono';
+// 预加载字标用的 Hanken 拉丁子集，避免 Header logo 在每次翻页时字体交换闪动
+import hankenWoff2 from '@fontsource-variable/hanken-grotesk/files/hanken-grotesk-latin-wght-normal.woff2?url';
+import '../styles/global.css';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import SearchModal from '../components/SearchModal.astro';
+import { SITE, abs } from '../lib/seo';
+import { ClientRouter } from 'astro:transitions';
+
+// 所有页面共用的 SEO、Open Graph 和 JSON-LD 入参
+interface Props {
+  title?: string;
+  description?: string;
+  ogType?: string;
+  image?: string;
+  jsonLd?: Record<string, unknown> | Record<string, unknown>[];
+}
+
+// 页面未传值时使用站点默认标题和描述，减少普通列表页重复配置
+const {
+  title = '试金石 Touchstone — AI 工具盲评与排行榜',
+  description = SITE.tagline,
+  ogType = 'website',
+  image,
+  jsonLd,
+} = Astro.props;
+
+// canonical、分享图和结构化数据统一在布局层收口
+const canonical = abs(Astro.url.pathname, Astro.site);
+const ogImage = image ? abs(image, Astro.site) : undefined;
+const ldBlocks = jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [];
+---
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    {/* 无闪烁主题：首帧前套用用户选择默认浅色，不跟随系统；设啥是啥 */}
+    <script is:inline>
+      (() => {
+        // 首屏脚本必须早于 CSS 绘制，避免深浅色切换闪一下
+        const apply = () => {
+          try {
+            const t = localStorage.getItem('ts-theme');
+            if (t === 'dark' || t === 'light') {
+              document.documentElement.setAttribute('data-theme', t);
+              document.documentElement.style.colorScheme = t;
+            }
+          } catch (e) {}
+        };
+        apply();
+        // View Transitions 会重置 html 属性，导航后需要重新套用主题
+        if (!window.__tsTheme) {
+          window.__tsTheme = 1;
+          document.addEventListener('astro:after-swap', apply);
+        }
+      })();
+    </script>
+    <link rel="preload" href={hankenWoff2} as="font" type="font/woff2" crossorigin />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <meta name="color-scheme" content="light" />
+    <ClientRouter />
+
+    <meta property="og:type" content={ogType} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:site_name" content="试金石 Touchstone" />
+    <meta property="og:locale" content={SITE.locale} />
+    {ogImage && <meta property="og:image" content={ogImage} />}
+
+    {/* Twitter 卡片跟 Open Graph 共用同一套标题、描述和图片 */}
+    <meta name="twitter:card" content={ogImage ? 'summary_large_image' : 'summary'} />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    {ogImage && <meta name="twitter:image" content={ogImage} />}
+
+    {ldBlocks.map((block) => (
+      <script type="application/ld+json" set:html={JSON.stringify(block)} />
+    ))}
+  </head>
+  <body>
+    <div class="grain" aria-hidden="true"></div>
+    <Header />
+
+    {/* Pagefind 只索引 main 内正文，避免导航、页脚和弹窗污染搜索结果 */}
+    <main data-pagefind-body>
+      <slot />
+    </main>
+    <Footer />
+    <SearchModal />
+    <script>
+      // 客户端路由下 Header 会持久化，当前页高亮需在每次导航后同步
+      function tsUpdateNav() {
+        const path = location.pathname;
+        document.querySelectorAll('a[data-nav]').forEach((a) => {
+          const href = a.getAttribute('href') || '';
+          const on = href !== '/' && (path === href || path.startsWith(href + '/'));
+          if (on) a.setAttribute('aria-current', 'page');
+          else a.removeAttribute('aria-current');
+        });
+      }
+      document.addEventListener('astro:page-load', tsUpdateNav);
+    </script>
+  </body>
+</html>

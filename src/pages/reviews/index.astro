@@ -1,0 +1,65 @@
+---
+import Base from '../../layouts/Base.astro';
+import { getCollection } from 'astro:content';
+import { itemListLd, abs } from '../../lib/seo';
+
+// 测评列表只展示非草稿，并按更新时间倒序排列
+const reviews = (await getCollection('reviews', ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf(),
+);
+
+// 列表页用 ItemList 标注所有可见测评，辅助搜索引擎理解页面结构
+const ld = itemListLd({
+  name: '工具测评',
+  url: abs('/reviews', Astro.site),
+  items: reviews.map((r) => ({ name: r.data.title, url: abs(`/reviews/${r.id}`, Astro.site) })),
+});
+---
+
+<Base
+  title="工具测评 · 试金石 Touchstone"
+  description="站长实测的 AI 工具测评：优缺点、价格与免费额度、是否需要梯子、中文支持度，外加一句不绕弯的态度。"
+  jsonLd={ld}
+>
+  <section class="mx-auto max-w-7xl px-6 pt-16 pb-10">
+    <p class="ts-eyebrow">Reviews · 工具测评</p>
+    <h1 class="mt-4 font-serif text-4xl font-semibold sm:text-5xl">工具测评</h1>
+    <p class="mt-4 max-w-[58ch] text-lg text-muted">
+      实测截图、优缺点、价格与免费额度、是否需要梯子、中文支持度——外加一句不绕弯的站长态度。
+    </p>
+  </section>
+
+  <section class="mx-auto max-w-7xl px-6 pb-20">
+    <div class="grid gap-6 md:grid-cols-3">
+      {reviews.map((r, i) => (
+        <a
+          href={`/reviews/${r.id}`}
+          class="ts-card group flex flex-col overflow-hidden transition-transform duration-300 hover:-translate-y-1 ts-rise"
+          style={`animation-delay:${i * 60}ms`}
+        >
+          <div class="flex aspect-[16/9] items-center justify-center border-b border-border bg-bg-subtle">
+            <span class="ts-eyebrow">封面 16:9</span>
+          </div>
+          <div class="flex flex-1 flex-col p-5">
+            <div class="flex items-center gap-2">
+              <span class="ts-eyebrow text-primary">{r.data.category}</span>
+              {r.data.sample && <span class="ts-eyebrow text-muted">· 示例</span>}
+            </div>
+            <h2 class="mt-2 font-serif text-xl font-semibold leading-snug transition-colors group-hover:text-primary">
+              {r.data.title}
+            </h2>
+            <p class="mt-2 line-clamp-2 text-sm text-muted">{r.data.dek}</p>
+            <div class="mt-4 flex items-center justify-between pt-3 text-xs text-muted">
+              <span>{r.data.tool}</span>
+              {r.data.rating != null && (
+                <span class="ts-num rounded-md bg-bg-subtle px-2 py-0.5 font-medium text-primary">
+                  {r.data.rating.toFixed(1)}
+                </span>
+              )}
+            </div>
+          </div>
+        </a>
+      ))}
+    </div>
+  </section>
+</Base>
