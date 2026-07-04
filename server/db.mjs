@@ -57,3 +57,57 @@ export function updateElo(winnerElo, loserElo) {
     loser: loserElo - K * (1 - expWin),
   };
 }
+
+// —— 管理后台专用 CRUD（admin/ 进程使用；公共 API index.mjs 不引用，访客行为不变）——
+export const arenaAdmin = {
+  listPrompts: () =>
+    db
+      .prepare(
+        `SELECT p.*, (SELECT COUNT(*) FROM works w WHERE w.prompt_id = p.id) AS work_count
+         FROM prompts p ORDER BY p.id DESC`,
+      )
+      .all(),
+  getPrompt: (id) => db.prepare('SELECT * FROM prompts WHERE id = ?').get(id),
+  insertPrompt: (category, text, note) =>
+    db.prepare('INSERT INTO prompts (category, text, note) VALUES (?, ?, ?)').run(category, text, note),
+  // 改品类时同步作品的冗余 category，保证配对/排行接口过滤一致
+  updatePrompt(id, category, text, note) {
+    db.prepare('UPDATE prompts SET category = ?, text = ?, note = ? WHERE id = ?').run(category, text, note, id);
+    db.prepare('UPDATE works SET category = ? WHERE prompt_id = ?').run(category, id);
+  },
+  // 删 prompt 级联删掉名下作品与相关投票，避免残留孤儿数据
+  deletePrompt(id) {
+    db.exec('BEGIN');
+    try {
+      db.prepare(
+        `DELETE FROM votes WHERE winner_id IN (SELECT id FROM works WHERE prompt_id = ?)
+         OR loser_id IN (SELECT id FROM works WHERE prompt_id = ?)`,
+      ).run(id, id);
+      db.prepare('DELETE FROM works WHERE prompt_id = ?').run(id);
+      db.prepare('DELETE FROM prompts WHERE id = ?').run(id);
+      db.exec('COMMIT');
+    } catch (err) {
+      db.exec('ROLLBACK');
+      throw err;
+    }
+  },
+  listWorks: (promptId) => db.prepare('SELECT * FROM works WHERE prompt_id = ? ORDER BY id').all(promptId),
+  getWork: (id) => db.prepare('SELECT * FROM works WHERE id = ?').get(id),
+  insertWork: (promptId, category, modelLabel, mediaUrl) =>
+    db
+      .prepare('INSERT INTO works (category, prompt_id, model_label, media_url, created_at) VALUES (?, ?, ?, ?, ?)')
+      .run(category, promptId, modelLabel, mediaUrl, new Date().toISOString()),
+  updateWork: (id, modelLabel, mediaUrl) =>
+    db.prepare('UPDATE works SET model_label = ?, media_url = ? WHERE id = ?').run(modelLabel, mediaUrl, id),
+  deleteWork(id) {
+    db.exec('BEGIN');
+    try {
+      db.prepare('DELETE FROM votes WHERE winner_id = ? OR loser_id = ?').run(id, id);
+      db.prepare('DELETE FROM works WHERE id = ?').run(id);
+      db.exec('COMMIT');
+    } catch (err) {
+      db.exec('ROLLBACK');
+      throw err;
+    }
+  },
+};

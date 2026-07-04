@@ -1,4 +1,4 @@
----
+﻿---
 tags: [touchstone, vibe-coding, decisions]
 aliases: [Touchstone 决策日志, Touchstone Decision Log]
 created: 2026-06-16
@@ -65,6 +65,20 @@ created: 2026-06-16
   - astro-pagefind 的 `<Search>` 渲染 `<pagefind-searchbox>`（下拉式 web component），放模态里结果下拉被裁；且我误用 `uiOptions`（实际是 `searchboxOptions`，被忽略）。**改用经典 `PagefindUI`**（结果内联、撑高 + 可滚），手动加载 `/pagefind/pagefind-ui.{js,css}`（整合仍会生成这些产物，移除 `<Search>` 不影响 `/pagefind/`）。
   - `<dialog>` 坑：给 `.ts-search` 直接 `display:flex` 覆盖了关闭态 UA `display:none` → 弹窗常驻页底。改为不在基样式设 display，交给浏览器（关闭 none / 打开 block）。
 - 弹窗用 **document 级事件委托 + 守卫**，配合 `transition:persist` 跨页只绑一次、不重复。
+
+## 2026-07-04 · 管理后台（admin/）
+
+- **独立第三进程**：后台放新顶层目录 `admin/`（与 `server/` 平级），`pnpm dev:admin` 启动（默认 :8790，`ADMIN_PORT`/`PORT` 可覆盖）。不并入 Astro 工程、不改主站静态输出；公共 API `server/index.mjs` 对访客的行为零改动。
+- **内容不进库**：测评/横评/合集/情报仍是 Markdown + git 唯一权威。后台直接读写 `src/content/*/**.md`，每次保存/删除只 `git add` + `git commit` 那一个文件（`content: add|update|delete <集合>/<slug>.md`），**不自动 push**。机器没配 git 身份时以 `Touchstone Admin <admin@touchstone.local>` 落款兜底，配了则尊重原配置。
+- **frontmatter 读写选 `yaml` 包**（纯 JS，非原生依赖，不违背零原生依赖底线）：横评的 columns/tools、合集的 items 是嵌套结构，手写 YAML 解析器一旦出错会静默毁内容，不值得省这一个依赖。序列化按 schema 键序输出、false 布尔省略，与手写文件习惯一致；但**编辑旧文件会重排 frontmatter 格式**（如去掉多余引号），diff 略吵、内容无损。
+- **zod 校验双份同构**：`content.config.ts` 依赖 `astro:content` 虚拟模块，纯 Node 进程 import 不了，遂在 `admin/schemas.mjs` 经 `astro/zod` 重写同构 schema，保存前先校验、不合法直接 422 拒写。**改 schema 时两处必须同步**。草稿沿用既有 `draft` 布尔（Astro 页面已按 `!data.draft` 过滤）。
+- **认证走内置 crypto**：单管理员账号存独立 `admin/admin.db`（`admin_users` 表，不与 Arena 高频写入的 arena.db 混用）；密码 `crypto.scrypt`（同 node:sqlite 的选型理由：零原生依赖、避开 Windows 编译坑）；会话为 Hono 自带 `setSignedCookie` 签名的 httpOnly + SameSite=Strict cookie，签名密钥持久化在 admin.db 里（重启不掉登录）。首次启动自动建 `admin` 账号（密码取 `ADMIN_PASSWORD` 或随机生成打印一次）；忘记密码 `node admin/reset-password.mjs <新密码>`。登录失败同 IP 10 分钟限 10 次。
+- **Arena CRUD 复用 `server/db.mjs`**：新增导出 `arenaAdmin`（prompts/works 增删改的预编译语句），公共接口不引用它。删 prompt/作品会级联删相关投票，避免孤儿数据；改 prompt 品类同步名下作品的冗余 category。
+- **媒体上传 = 存储适配器**：`admin/storage.mjs` 只暴露 `upload(buffer, name) -> url`；默认 local 适配器落盘 `admin/uploads/`（已 gitignore）并由后台以公开只读路由 `/uploads/*` 提供（Arena island 要能直接引用）。日后接真 OSS：同文件里补一个同接口 adapter + 设 `ADMIN_STORAGE=oss`，调用方零改动。上传按扩展名白名单过滤、50MB 上限。
+- **构建串行化**：后台「重新构建站点」按钮起子进程跑仓库根的 `pnpm build`，进程内互斥标志保证同刻只有一个构建（第二次触发返回 409），日志/成败回显到总览页。不上队列库——单人后台，正确 + 不并发即够。
+- **后台 UI 不上 React/Vite**：Hono `hono/html` 服务端渲染 + 原生 JS fetch。设计令牌**直接以 `/assets/tokens.css` 路由回源主站 `src/styles/tokens.css` 真源文件**（非复制，主站改令牌后台自动跟上）；`.ts-btn`/`.ts-card`/`.ts-eyebrow`/`.ts-num`/`.grain` 等原子在 `admin/public/admin.css` 手写同名同形；四款自托管字体从 node_modules 的 fontsource 文件直接回源。深浅色沿用主站同一 `ts-theme` localStorage 键。
+- **坑**：① Windows 下 spawn `pnpm` 必须 `shell: true`（.cmd 垫片）；② curl 发 multipart 到本机 Hono 会连接失败（curl 侧问题），浏览器/Node fetch 的 FormData 正常——用 curl 调试上传接口会误判；③ git 无全局身份的机器上 commit 会炸 "Author identity unknown"，已在后台内兜底。
+- 明确不做（v1 范围外）：访问统计面板、多账号/角色、真 OSS 凭证接入、CI/CD 触发构建、生产部署配置。
 
 ## 已处理 / 待决
 

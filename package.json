@@ -9,6 +9,7 @@
     "preview": "astro preview",
     "seed": "node --disable-warning=ExperimentalWarning server/seed.mjs",
     "dev:api": "node --disable-warning=ExperimentalWarning --watch server/index.mjs",
+    "dev:admin": "node --disable-warning=ExperimentalWarning --watch admin/index.mjs",
     "dev:all": "concurrently -n web,api -c blue,green \"pnpm dev\" \"pnpm dev:api\""
   },
   "dependencies": {
@@ -24,7 +25,8 @@
     "hono": "^4.12.25",
     "motion": "^12.40.0",
     "react": "^19.2.7",
-    "react-dom": "^19.2.7"
+    "react-dom": "^19.2.7",
+    "yaml": "^2.8.0"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.0.0",
