@@ -43,6 +43,19 @@ created: 2026-06-16
 - [ ] 上线：真 Turnstile key、防刷加固、ICP、OSS+ECS 部署
 - 细节见 [[Touchstone Arena 机制]]
 
+## Phase 3 · 管理后台（本地已跑通）
+
+- [x] 独立后台进程 `admin/`：`pnpm dev:admin`（:8788），零原生依赖（node:sqlite + scrypt + 签名 cookie）
+- [x] 单管理员登录（首启自动建号，`ADMIN_PASSWORD` 或随机打印；`reset-password.mjs` 找回）；未登录一律拒绝
+- [x] 四类内容 CRUD（测评/横评/合集/情报）：表单校验（与 content.config.ts 同构 zod）→ 写 Markdown → 自动 git commit（不 push）；draft 草稿沿用主站过滤
+- [x] Arena prompt/作品 CRUD（复用 server/db.mjs，级联清投票）+ 本地媒体上传（存储适配器 + `/uploads/` 只读服务）
+- [x] 一键重建站点：串行化 `pnpm build`（并发触发拒绝）+ 日志/成败回显
+- [x] 后台 UI 与主站同源视觉（回源 tokens.css + 同名 .ts-* 原子 + 颗粒噪点 + 深浅色）
+- [ ] 真 OSS 适配器（storage.mjs 里补 oss adapter + `ADMIN_STORAGE=oss`，等凭证）
+- [ ] 访问统计面板（明确延后，不建 page_views 表）
+- [ ] 多账号 / 角色权限（v1 单账号，加号手动插 admin_users 表）
+- [ ] CI/CD 触发构建、生产部署（Nginx/域名/进程守护）——随上线一并做
+
 ## 上线
 
 - [ ] ICP 备案 → 替换 `site` 域名 → OSS+CDN 部署

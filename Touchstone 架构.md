@@ -18,6 +18,7 @@ created: 2026-06-16
 - **SEO**：`@astrojs/sitemap` 生成 sitemap；`public/robots.txt`。
 - **滚动条**：`overflow-y: scroll` 槽位常驻（宽度恒定 → 翻页零位移）+ 透明轨道（短页不可见）+ webkit 暖色细滑块；Firefox 经 `@supports` 用标准属性。纯 CSS、无依赖。
 - **后端**：仅 Phase 2，Hono + SQLite，只做盲评/排行接口，无用户系统。详见 [[Touchstone Arena 机制]]。
+- **管理后台**：独立第三进程 `admin/`（Hono + `node:sqlite` + `yaml`，纯 ESM 零构建）。内容 CRUD 直接读写 `src/content` 的 Markdown 并自动 git commit（不 push）；Arena prompts/works CRUD 复用 `server/db.mjs`；本地媒体上传（存储适配器，日后可换 OSS）；一键串行化 `pnpm build`。UI 为 `hono/html` 服务端渲染 + 原生 JS，设计令牌直接回源主站 `tokens.css`。决策与细节见 [[Touchstone 决策日志]] 2026-07-04 条。
 - 包管理 pnpm（corepack 启用），TypeScript strict。
 
 ## 目录结构
@@ -29,6 +30,11 @@ Touchstone/
 ├─ astro.config.mjs · tsconfig.json · package.json
 ├─ public/                  favicon.svg · robots.txt（字体已自托管，无需放这里）
 ├─ server/                  Phase 2 后端：db.mjs · seed.mjs · index.mjs（Hono + node:sqlite）
+├─ admin/                   管理后台（独立进程 :8788）：index.mjs（路由/鉴权）· db.mjs（admin.db：
+│                           账号+会话密钥）· schemas.mjs（zod 同构校验）· content.mjs（Markdown 读写
+│                           + git commit）· build.mjs（构建锁）· storage.mjs（上传适配器）
+│                           · reset-password.mjs · views/（hono/html 页面）· public/（手写 CSS/JS）
+│                           · uploads/（本地媒体，gitignore）
 └─ src/
    ├─ styles/tokens.css     设计令牌（颜色/字体/阴影，light-dark + hex 兜底）
    ├─ styles/global.css     Tailwind 接入 + base 层 + 颗粒噪点 + 组件原子(.ts-*)
@@ -68,6 +74,9 @@ corepack enable pnpm   # 仅首次
 pnpm install
 pnpm dev               # http://localhost:4321
 pnpm build && pnpm preview
+pnpm dev:api           # Arena 公共 API http://localhost:8787
+pnpm dev:admin         # 管理后台 http://localhost:8788（首次启动打印 admin 初始密码，或先设 ADMIN_PASSWORD）
+pnpm dev:all           # 同起前端 + 公共 API
 ```
 
 ## 上线前提醒
