@@ -12,14 +12,14 @@ created: 2026-06-16
 
 - **合规底线**：本站不对公众提供生成式 AI 服务，作品全部站长离线生成后上传，用户只浏览 + 盲评 → 属内容媒体站，绕开生成式算法备案。任何站内调用模型生成内容的功能一律不做。
 - **Astro 建在 Touchstone 根**（非 `site/` 子目录）：少一层嵌套，`src/` 本身即代码子目录，Obsidian 笔记与代码同根共存互不干扰。
-- **`.gitignore` 优先落地**：库每隔几分钟自动 `vault backup` 提交，必须先忽略 `node_modules/ dist/ .astro/`，否则备份历史被几万文件撑爆。
+- **`.gitignore` 优先落地**：Obsidian 库有自动定时提交，必须先忽略 `node_modules/ dist/ .astro/`，否则提交历史被几万文件撑爆。
 - **pnpm 经 corepack 启用**（Node 24 自带），未全局装。
 - **pnpm 11 构建脚本放行**：`esbuild`/`sharp` 默认被拦；配置已从 package.json `pnpm` 字段（11 不再读）迁到 `pnpm-workspace.yaml` 的 `allowBuilds`。
 - **主题用 `light-dark()` 单一来源**：默认跟随系统，`data-theme` 锁定覆盖。比「dark 值写两遍」干净；老浏览器走 `@supports not(light-dark)` 的 hex 兜底块降级。
 - **字体策略**：Latin 自托管（fontsource，离线、规避 Google Fonts 在国内不稳）；中文暂用系统兜底。**生产前需补**：中文 Noto SC 子集化自托管（全量 CJK 太大）。
 - **字标字体**：站长要 Anthropic Sans，但其为私有商用字体、不可合法打包、手头也无文件。改用 **Hanken Grotesk**（humanist grotesque，免费）作字标专用近似（`--font-wordmark`），仅 logo 用。若日后拿到授权字体文件可直接替换该令牌。
-- **Tailwind v4 + 令牌**：令牌为 CSS 自定义属性（真源），`@theme inline` 映射成工具类，主题切换实时生效——既满足项目「Tailwind + CSS 变量」要求，也符合 skill「先声明令牌」。
-- **占位不造假**：v0 首页用占位封面 + 清晰标注「示例结构 · 数据 Phase 2 接入」，不编造真实模型分数/评测结论（遵 skill：placeholder > fabricated data）。
+- **Tailwind v4 + 令牌**：令牌为 CSS 自定义属性（真源），`@theme inline` 映射成工具类，主题切换实时生效——满足项目「Tailwind + CSS 变量」要求，且坚持「先声明令牌、再写页面」。
+- **占位不造假**：v0 首页用占位封面 + 清晰标注「示例结构 · 数据 Phase 2 接入」，不编造真实模型分数/评测结论（原则：宁可占位，不造假数据）。
 
 ## 2026-06-16 · 内容站 + 交互层
 
@@ -82,5 +82,4 @@ created: 2026-06-16
 
 ## 已处理 / 待决
 
-- **AGENT.md 已去重（2026-06-16，站长确认）**：从重复两份收成单份（212→109 行）。Skills 读取路径写为本地 D 盘真目录（PowerShell 验证非 junction/symlink），E 盘 `Obsidian-github` 标注为 durable 上游源。
 - 待决：正式域名 + ICP 备案后替换 `astro.config.mjs` 的 `site`。

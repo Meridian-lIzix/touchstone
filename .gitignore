@@ -1,4 +1,4 @@
-# Touchstone — keep build artifacts out of the vault auto-backup
+# Touchstone — 构建产物与本地数据不进仓库
 node_modules/
 dist/
 .astro/
@@ -13,13 +13,13 @@ admin/*.db
 admin/*.db-*
 admin/uploads/
 
-# agent working dirs
+# 本地工具工作目录，不进仓库
 .agents/
 .codex/
 .claude/
 
-# 顶层 markdown 默认只留本地：instructions.md、以及所有 "* 本地.md"（含 vault 双链的源文件）不上传。
-# 下方显式放行要共享给团队的文档；src/content 下的内容 .md 不受影响，照常跟踪。
+# 顶层 markdown 默认只留本地；下方显式放行要共享的文档。
+# src/content 下的内容 .md 不受影响，照常跟踪。
 /*.md
 !/README.md
 !/Touchstone 架构.md

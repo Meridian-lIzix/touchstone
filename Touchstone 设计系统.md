@@ -6,7 +6,7 @@ created: 2026-06-16
 
 # Touchstone 设计系统
 
-总入口见 [[Touchstone MOC]]。视觉工艺由 `web-design-engineer` skill 方法论主导；本页是落地后的令牌留存。
+总入口见 [[Touchstone MOC]]。本页是设计方向定稿后的令牌留存。
 代码：`src/styles/tokens.css`（令牌）+ `src/styles/global.css`（Tailwind 接入与组件原子）。预览页：`/styleguide`。
 
 ## 唯一视觉方向
