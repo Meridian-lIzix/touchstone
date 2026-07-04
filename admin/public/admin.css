@@ -315,6 +315,7 @@ textarea.adm-body { min-height: 18rem; font-family: var(--font-mono); font-size:
   padding: 1.5rem;
 }
 .adm-login-card { width: 100%; max-width: 22rem; padding: 2.2rem; }
+.adm-login-card .ts-btn { justify-content: center; }
 
 /* —— 上传预览 —— */
 .adm-media-preview {
