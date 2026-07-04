@@ -1,5 +1,5 @@
 ---
-title: 测试工具：管理后台冒烟测试
+title: 测试工具：管理后台冒烟测试·已更新
 tool: TestTool
 category: AI 测试
 date: 2026-07-04
@@ -16,7 +16,6 @@ cons:
 bestFor:
   - 测试人员
 link: https://example.com
-draft: true
 ---
 
 正文第一段。
