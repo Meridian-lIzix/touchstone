@@ -11,6 +11,7 @@ server/*.bak
 # agent working dirs
 .agents/
 .codex/
+.claude/
 
 # 顶层 markdown 默认只留本地：instructions.md、以及所有 "* 本地.md"（含 vault 双链的源文件）不上传。
 # 下方显式放行要共享给团队的文档；src/content 下的内容 .md 不受影响，照常跟踪。
