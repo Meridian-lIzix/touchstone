@@ -8,6 +8,11 @@ server/*.db
 server/*.db-*
 server/*.bak
 
+# 管理后台：本地数据库 + 本地上传的媒体文件
+admin/*.db
+admin/*.db-*
+admin/uploads/
+
 # agent working dirs
 .agents/
 .codex/
