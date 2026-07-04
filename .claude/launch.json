@@ -5,7 +5,7 @@
       "name": "admin",
       "runtimeExecutable": "node",
       "runtimeArgs": ["--disable-warning=ExperimentalWarning", "admin/index.mjs"],
-      "port": 8788,
+      "port": 8790,
       "autoPort": true
     }
   ]

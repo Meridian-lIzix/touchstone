@@ -1,4 +1,4 @@
----
+﻿---
 tags: [touchstone, vibe-coding, architecture]
 aliases: [Touchstone 架构, Touchstone Architecture]
 created: 2026-06-16
@@ -30,7 +30,7 @@ Touchstone/
 ├─ astro.config.mjs · tsconfig.json · package.json
 ├─ public/                  favicon.svg · robots.txt（字体已自托管，无需放这里）
 ├─ server/                  Phase 2 后端：db.mjs · seed.mjs · index.mjs（Hono + node:sqlite）
-├─ admin/                   管理后台（独立进程 :8788）：index.mjs（路由/鉴权）· db.mjs（admin.db：
+├─ admin/                   管理后台（独立进程 :8790）：index.mjs（路由/鉴权）· db.mjs（admin.db：
 │                           账号+会话密钥）· schemas.mjs（zod 同构校验）· content.mjs（Markdown 读写
 │                           + git commit）· build.mjs（构建锁）· storage.mjs（上传适配器）
 │                           · reset-password.mjs · views/（hono/html 页面）· public/（手写 CSS/JS）
@@ -75,7 +75,7 @@ pnpm install
 pnpm dev               # http://localhost:4321
 pnpm build && pnpm preview
 pnpm dev:api           # Arena 公共 API http://localhost:8787
-pnpm dev:admin         # 管理后台 http://localhost:8788（首次启动打印 admin 初始密码，或先设 ADMIN_PASSWORD）
+pnpm dev:admin         # 管理后台 http://localhost:8790（首次启动打印 admin 初始密码，或先设 ADMIN_PASSWORD）
 pnpm dev:all           # 同起前端 + 公共 API
 ```
 

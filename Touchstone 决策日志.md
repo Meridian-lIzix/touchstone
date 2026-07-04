@@ -1,4 +1,4 @@
----
+﻿---
 tags: [touchstone, vibe-coding, decisions]
 aliases: [Touchstone 决策日志, Touchstone Decision Log]
 created: 2026-06-16
@@ -68,7 +68,7 @@ created: 2026-06-16
 
 ## 2026-07-04 · 管理后台（admin/）
 
-- **独立第三进程**：后台放新顶层目录 `admin/`（与 `server/` 平级），`pnpm dev:admin` 启动（默认 :8788，`ADMIN_PORT`/`PORT` 可覆盖）。不并入 Astro 工程、不改主站静态输出；公共 API `server/index.mjs` 对访客的行为零改动。
+- **独立第三进程**：后台放新顶层目录 `admin/`（与 `server/` 平级），`pnpm dev:admin` 启动（默认 :8790，`ADMIN_PORT`/`PORT` 可覆盖）。不并入 Astro 工程、不改主站静态输出；公共 API `server/index.mjs` 对访客的行为零改动。
 - **内容不进库**：测评/横评/合集/情报仍是 Markdown + git 唯一权威。后台直接读写 `src/content/*/**.md`，每次保存/删除只 `git add` + `git commit` 那一个文件（`content: add|update|delete <集合>/<slug>.md`），**不自动 push**。机器没配 git 身份时以 `Touchstone Admin <admin@touchstone.local>` 落款兜底，配了则尊重原配置。
 - **frontmatter 读写选 `yaml` 包**（纯 JS，非原生依赖，不违背零原生依赖底线）：横评的 columns/tools、合集的 items 是嵌套结构，手写 YAML 解析器一旦出错会静默毁内容，不值得省这一个依赖。序列化按 schema 键序输出、false 布尔省略，与手写文件习惯一致；但**编辑旧文件会重排 frontmatter 格式**（如去掉多余引号），diff 略吵、内容无损。
 - **zod 校验双份同构**：`content.config.ts` 依赖 `astro:content` 虚拟模块，纯 Node 进程 import 不了，遂在 `admin/schemas.mjs` 经 `astro/zod` 重写同构 schema，保存前先校验、不合法直接 422 拒写。**改 schema 时两处必须同步**。草稿沿用既有 `draft` 布尔（Astro 页面已按 `!data.draft` 过滤）。

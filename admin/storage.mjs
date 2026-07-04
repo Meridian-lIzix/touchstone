@@ -5,11 +5,10 @@ import { writeFileSync, mkdirSync } from 'node:fs';
 import { randomUUID } from 'node:crypto';
 import { extname, join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { PUBLIC_BASE } from './config.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 export const UPLOAD_DIR = join(here, 'uploads');
-
-const PUBLIC_BASE = process.env.ADMIN_PUBLIC_BASE || 'http://localhost:8788';
 const ALLOWED_EXT = new Set(['.png', '.jpg', '.jpeg', '.webp', '.gif', '.svg', '.mp4', '.webm', '.txt', '.md']);
 
 const localAdapter = {

@@ -8,6 +8,7 @@ import { getSignedCookie, setSignedCookie, deleteCookie } from 'hono/cookie';
 import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, basename } from 'node:path';
+import { PORT } from './config.mjs';
 import { adminDb, verifyPassword, getCookieSecret, ensureAdminUser, findUser } from './db.mjs';
 import { db, arenaAdmin } from '../server/db.mjs';
 import { COLLECTIONS } from './schemas.mjs';
@@ -295,6 +296,5 @@ if (firstPassword) {
   console.log('[admin] 忘记密码时：node admin/reset-password.mjs <新密码>');
 }
 
-const port = Number(process.env.ADMIN_PORT ?? process.env.PORT) || 8788;
-serve({ fetch: app.fetch, port });
-console.log(`[admin] 管理后台已启动：http://localhost:${port}（存储适配器：${storage.name}）`);
+serve({ fetch: app.fetch, port: PORT });
+console.log(`[admin] 管理后台已启动：http://localhost:${PORT}（存储适配器：${storage.name}）`);
