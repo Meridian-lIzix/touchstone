@@ -1,8 +1,8 @@
 ---
-title: "AI 修图横评：抠图、扩图、中文支持，谁更适合你"
-category: "AI 修图"
+title: AI 修图横评：抠图、扩图、中文支持，谁更适合你
+category: AI 修图
 date: 2026-06-13
-dek: "同样是「一键修图」，差别全在你最在意哪一项。"
+dek: 同样是「一键修图」，差别全在你最在意哪一项。
 columns:
   - key: price
     label: 价格
