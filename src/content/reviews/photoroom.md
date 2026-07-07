@@ -1,26 +1,27 @@
 ---
-title: "Photoroom 实测：抠图扩图够快，但别指望它替代设计师"
-tool: "Photoroom"
-category: "AI 修图"
+title: Photoroom 实测：抠图扩图够快，但别指望它替代设计师
+tool: Photoroom
+category: AI 修图
 date: 2026-06-12
-dek: "抠图、去背、扩图是真省事；真要做完整排版，它还差一口气。"
+dek: 抠图、去背、扩图是真省事；真要做完整排版，它还差一口气。
+cover: /uploads/content/fb10aa93-f37f.png
 rating: 7.8
-pricing: "免费可用，去水印 / 批量 / 高清导出要订阅"
+pricing: 免费可用，去水印 / 批量 / 高清导出要订阅
 freeTier: true
 needsVpn: true
-chinese: "良好"
+chinese: 良好
 pros:
-  - "抠图边缘干净，发丝、毛绒这类细节少翻车"
-  - "批量处理电商白底图，是实打实的省时间"
-  - "模板够多，套版出图快"
+  - 抠图边缘干净，发丝、毛绒这类细节少翻车
+  - 批量处理电商白底图，是实打实的省时间
+  - 模板够多，套版出图快
 cons:
-  - "复杂排版自由度低，更像填空而不是设计"
-  - "免费版导出有水印、卡分辨率"
-  - "偶尔要梯子，网络不稳时体验打折"
+  - 复杂排版自由度低，更像填空而不是设计
+  - 免费版导出有水印、卡分辨率
+  - 偶尔要梯子，网络不稳时体验打折
 bestFor:
-  - "电商卖家批量出白底 / 场景图"
-  - "想快速做封面、又不想学设计软件的人"
-link: "https://www.photoroom.com"
+  - 电商卖家批量出白底 / 场景图
+  - 想快速做封面、又不想学设计软件的人
+link: https://www.photoroom.com
 sample: true
 ---
 
