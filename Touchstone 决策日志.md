@@ -1,4 +1,4 @@
-﻿---
+---
 tags: [touchstone, vibe-coding, decisions]
 aliases: [Touchstone 决策日志, Touchstone Decision Log]
 created: 2026-06-16
@@ -79,6 +79,26 @@ created: 2026-06-16
 - **后台 UI 不上 React/Vite**：Hono `hono/html` 服务端渲染 + 原生 JS fetch。设计令牌**直接以 `/assets/tokens.css` 路由回源主站 `src/styles/tokens.css` 真源文件**（非复制，主站改令牌后台自动跟上）；`.ts-btn`/`.ts-card`/`.ts-eyebrow`/`.ts-num`/`.grain` 等原子在 `admin/public/admin.css` 手写同名同形；四款自托管字体从 node_modules 的 fontsource 文件直接回源。深浅色沿用主站同一 `ts-theme` localStorage 键。
 - **坑**：① Windows 下 spawn `pnpm` 必须 `shell: true`（.cmd 垫片）；② curl 发 multipart 到本机 Hono 会连接失败（curl 侧问题），浏览器/Node fetch 的 FormData 正常——用 curl 调试上传接口会误判；③ git 无全局身份的机器上 commit 会炸 "Author identity unknown"，已在后台内兜底。
 - 明确不做（v1 范围外）：访问统计面板、多账号/角色、真 OSS 凭证接入、CI/CD 触发构建、生产部署配置。
+
+## 2026-07-07 · 首页当期榜单接真实 Arena 数据
+
+- **不再静态占位**：首页“当期榜单 · AI 生图”移除候选 A/B/C 和封面 4:3，改为 `HomeRanking.tsx` 客户端读取 `/api/leaderboard?category=image` 的累计前三名；当前接口没有月份过滤，因此不标“本月”。
+- **排行榜接口补展示封面**：`/api/leaderboard` 聚合模型 Elo、票数、作品数时附带同模型可用图片作品 `coverUrl`；首页直接显示真实媒体，没有封面时降级为模型名文本。
+- **验证**：`pnpm build` 通过；API 返回 `coverUrl`；首页产物无“候选 / 封面 4:3 / Phase 2 / 示例结构”残留。
+
+## 2026-07-07 · 后台 Arena 列表筛选与按钮规格
+
+- **字段含义**：Prompt 列表的 `品类` 来自 `prompts.category`；`作品数` 是该 prompt 关联 works 的实时计数。当前 text/code/image 常见 6/7/2 是导入数据批次的模型数量差异，不是固定 UI 规则。
+- **筛选方式**：Arena 列表页新增搜索、品类按钮、作品数下拉和重置；筛选在前端即时执行，不改变 CRUD 接口。
+- **按钮规格统一**：后台 `.ts-btn` 与输入框统一高度；表格小操作按钮统一最小宽度，避免“管理作品 / 删除”尺寸漂移。
+- **作品详情可见**：Prompt 详情页的作品行改为服务端直出，避免前端脚本异常时整表空白；后台补只读 `/media/*` 托管，用于查看导入包里的原图、代码和文案原文。
+- **详情页返回按钮统一**：Arena prompt 详情页统一把“返回列表”放在标题下方左侧，不再因 prompt 文本长短变化而跑到不同位置。
+
+## 2026-07-07 · 测评封面图字段与后台上传
+
+- **字段约定**：工具测评新增可选 `cover` frontmatter 字段；首页最新测评、测评列表、测评详情页顶部图和社交分享图都读取该字段。
+- **上传落点**：后台测评表单上传封面时写入 `public/uploads/content/`，返回 `/uploads/content/...`，保证 Astro 构建和 GitHub 部署能直接带上静态图片。
+- **后台入口**：测评编辑页新增封面 URL、上传图片和 16:9 预览；无 `cover` 时前台继续显示“封面 16:9 / 实测截图 16:9”占位。
 
 ## 已处理 / 待决
 

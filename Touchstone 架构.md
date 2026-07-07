@@ -1,4 +1,4 @@
-﻿---
+---
 tags: [touchstone, vibe-coding, architecture]
 aliases: [Touchstone 架构, Touchstone Architecture]
 created: 2026-06-16
@@ -44,7 +44,7 @@ Touchstone/
    ├─ content/              reviews · comparisons · collections · news（Markdown 内容）
    ├─ components/
    │    ├─ Header.astro · Footer.astro · ThemeToggle.astro · SearchModal.astro   静态/壳
-   │    └─ CompareTable.tsx · ArenaVote.tsx · Leaderboard.tsx                     React islands
+   │    └─ CompareTable.tsx · ArenaVote.tsx · Leaderboard.tsx · HomeRanking.tsx   React islands
    └─ pages/                index · about · styleguide · reviews/ · compare/
                             · collections/ · news/ · arena · leaderboard
 ```
@@ -53,7 +53,7 @@ Touchstone/
 
 **Phase 1（纯静态内容站）**
 
-1. 首页 `/` —— 数字杂志封面气质：主张 + 当期榜单精选(占位) + 最新测评/合集/情报(接真实内容)。✅
+1. 首页 `/` —— 数字杂志封面气质：主张 + 当期榜单精选(接 Arena AI 生图累计榜前三 + 封面) + 最新测评/合集/情报(接真实内容)。✅
 2. 工具测评 `/reviews` + `/reviews/[...slug]` —— 结构化信息块 + 优缺点 + 适合谁 + 站长态度。✅
 3. 横向对比 `/compare` + `/compare/[...slug]` —— 多维表，列头可点击排序（React island + motion）。✅
 4. 场景合集 `/collections` + `/collections/[...slug]` —— 按「我要干什么」编号串联。✅
@@ -65,7 +65,7 @@ Touchstone/
 
 每个内容页须：独立 title/description、Open Graph、JSON-LD（Article/Product/Review/ItemList 按页型）、响应式、`prefers-reduced-motion` 适配。
 
-**Phase 2（盲评 Arena）· 本地已实现**：`server/`（Hono + `node:sqlite`）+ `/arena`、`/leaderboard` 两个 React island。`pnpm dev:all` 同起前后端。详见 [[Touchstone Arena 机制]]。
+**Phase 2（盲评 Arena）· 本地已实现**：`server/`（Hono + `node:sqlite`）+ `/arena`、`/leaderboard` 两个 React island；首页 `HomeRanking` 复用排行榜 API 展示 AI 生图累计榜前三和封面。`pnpm dev:all` 同起前后端。详见 [[Touchstone Arena 机制]]。
 
 ## 本地运行
 

@@ -40,7 +40,7 @@ n 越小越被 m 拉回中枢；恶意噪声影响 ∝ 1/n。成对盲选则改�
 
 ```
 POST /api/vote        { pairId | workId, choice|rating, turnstileToken, fp }
-GET  /api/leaderboard?category=image   -> 排名 + 贝叶斯分 + 样本量 + 趋势
+GET  /api/leaderboard?category=image   -> 排名 + Elo + 样本量 + coverUrl
 GET  /api/arena/pair?category=image    -> 一对匿名作品
 GET  /api/work/:id/reveal              -> 翻牌：真实模型标签
 ```
@@ -60,7 +60,7 @@ votes:   id, work_id|pair_id, choice|rating, fp_hash, ip_hash, created_at
 
 - **后端** `server/`：Hono + `@hono/node-server`，纯 ESM。`db.mjs`（建表 + `sha`/`pairKey`/`updateElo` K=32）· `seed.mjs`（4 prompt / 14 占位作品，模型标签隐藏）· `index.mjs`（接口 + CORS）。
 - **DB**：Node 24 内置 `node:sqlite`（零原生依赖）。表 `prompts / works / votes`；`votes(fp_hash, pair_key)` 唯一索引去重，`votes(ip_hash, created_at)` 索引做限速查询。
-- **接口**：`GET /api/arena/pair?category=`（匿名对子）· `POST /api/vote`（Elo + 去重 + IP 限速 + 翻牌）· `GET /api/work/:id/reveal` · `GET /api/leaderboard?category=`（按模型聚合 Elo/样本量）· `GET /api/categories`。
-- **前端**：`src/components/ArenaVote.tsx`（盲选 + 翻牌 + 品类切换）、`Leaderboard.tsx`（排名 + 可信度）两个 React island；`/arena`、`/leaderboard` 页加载它们。API base = `PUBLIC_API_BASE`（默认 `http://localhost:8787`）。
+- **接口**：`GET /api/arena/pair?category=`（匿名对子）· `POST /api/vote`（Elo + 去重 + IP 限速 + 翻牌）· `GET /api/work/:id/reveal` · `GET /api/leaderboard?category=`（按模型聚合 Elo/样本量，并返回可展示封面 `coverUrl`）· `GET /api/categories`。
+- **前端**：`src/components/ArenaVote.tsx`（盲选 + 翻牌 + 品类切换）、`Leaderboard.tsx`（排名 + 可信度）、`HomeRanking.tsx`（首页 AI 生图累计榜前三 + 封面）三个 React island；`/arena`、`/leaderboard` 和首页加载它们。API base = `PUBLIC_API_BASE`（默认 `http://localhost:8787`）。
 - **防刷现状**：设备指纹用 localStorage UUID（FingerprintJS 钩子留待）；IP 10 分钟 60 票；Turnstile dev 未接真 key。
 - **运行**：`pnpm dev:all` 同时起 Astro(:4321) + Hono(:8787)；`server/*.db` 已 gitignore。
