@@ -125,8 +125,19 @@ function gitIdentityArgs(run) {
   return identityArgs;
 }
 
+// 生产用 tar 发布，REPO_ROOT 不是 git 仓库；此时跳过提交，只保留写文件的结果
+// 内容持久化由部署层把内容目录软链到共享卷保证，git 提交仅在开发仓库里作审计
+let insideRepo;
+function isGitRepo(run) {
+  if (insideRepo !== undefined) return insideRepo;
+  const probe = run(['rev-parse', '--is-inside-work-tree']);
+  insideRepo = probe.status === 0 && probe.stdout.trim() === 'true';
+  return insideRepo;
+}
+
 export function gitCommit(message, path) {
   const run = (args) => spawnSync('git', args, { cwd: REPO_ROOT, encoding: 'utf8' });
+  if (!isGitRepo(run)) return { committed: false, skipped: true };
   const add = run(['add', '--', path]);
   if (add.status !== 0) throw new HttpError(500, `git add 失败：${add.stderr || add.stdout}`);
   const commit = run([...gitIdentityArgs(run), 'commit', '-m', message, '--', path]);

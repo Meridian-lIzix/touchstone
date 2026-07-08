@@ -1,6 +1,7 @@
 // 站点重建：子进程跑 pnpm build，进程内互斥锁保证同一时刻只有一个构建
 // 小 VPS 上并发构建会 OOM，宁可让第二次触发直接被拒绝
 import { spawn } from 'node:child_process';
+import { join } from 'node:path';
 import { REPO_ROOT } from './content.mjs';
 
 const LOG_LIMIT = 64 * 1024;
@@ -25,10 +26,12 @@ export function startBuild() {
   state.ok = null;
   state.log = '';
 
-  // Windows 下 pnpm 是 .cmd 垫片，必须经 shell 启动
-  const child = spawn('pnpm', ['build'], {
+  // 直接用当前 node 执行 astro 入口，绕过 node_modules/.bin/astro 垫片
+  // 生产用 tar 跨机搬运 node_modules 会丢执行位，走垫片会 Permission denied
+  // 限制堆内存，避免小内存机器在构建时 OOM
+  const astroEntry = join(REPO_ROOT, 'node_modules', 'astro', 'astro.js');
+  const child = spawn(process.execPath, ['--max-old-space-size=2048', astroEntry, 'build'], {
     cwd: REPO_ROOT,
-    shell: process.platform === 'win32',
     env: process.env,
   });
   // 显式按 UTF-8 解码，避免多字节字符被 chunk 边界截断成乱码
