@@ -1,5 +1,4 @@
 User-agent: *
 Allow: /
 
-# 备案换正式域名后，此处主机名随 astro.config 的 site 一起更新
-Sitemap: https://touchstone.local/sitemap-index.xml
+Sitemap: https://touchstone.anamnesis.team/sitemap-index.xml

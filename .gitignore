@@ -3,10 +3,11 @@ node_modules/
 dist/
 .astro/
 
-# arena 后端本地数据库（SQLite）
+# arena 后端本地数据库（SQLite）与导入的作品资源（体积大，不进 git，部署时重新导入）
 server/*.db
 server/*.db-*
 server/*.bak
+server/media/
 
 # 管理后台：本地数据库 + 本地上传的媒体文件
 admin/*.db

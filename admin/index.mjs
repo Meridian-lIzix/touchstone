@@ -5,14 +5,15 @@ import { Hono } from 'hono';
 import { html } from 'hono/html';
 import { serve } from '@hono/node-server';
 import { getSignedCookie, setSignedCookie, deleteCookie } from 'hono/cookie';
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync, existsSync, mkdirSync, writeFileSync } from 'node:fs';
+import { randomUUID } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
-import { dirname, join, basename } from 'node:path';
+import { dirname, join, basename, normalize, extname } from 'node:path';
 import { PORT } from './config.mjs';
-import { adminDb, verifyPassword, getCookieSecret, ensureAdminUser, findUser } from './db.mjs';
+import { adminDb, verifyPassword, getCookieSecret, ensureAdminUser, findUser, bumpTokenVersion } from './db.mjs';
 import { db, arenaAdmin } from '../server/db.mjs';
 import { COLLECTIONS } from './schemas.mjs';
-import { listEntries, readEntry, saveEntry, deleteEntry, assertSlug, HttpError, REPO_ROOT } from './content.mjs';
+import { listEntries, readEntry, saveEntry, deleteEntry, assertSlug, HttpError, REPO_ROOT, gitCommit } from './content.mjs';
 import { startBuild, buildStatus } from './build.mjs';
 import { storage, UPLOAD_DIR } from './storage.mjs';
 import { layout, loginPage } from './views/layout.mjs';
@@ -24,6 +25,9 @@ const here = dirname(fileURLToPath(import.meta.url));
 const SECRET = getCookieSecret();
 const COOKIE = 'ts_admin';
 const SESSION_MS = 7 * 24 * 60 * 60 * 1000;
+const MEDIA_DIR = join(REPO_ROOT, 'server', 'media');
+const CONTENT_UPLOAD_DIR = join(REPO_ROOT, 'public', 'uploads', 'content');
+const CONTENT_IMAGE_EXT = new Set(['.png', '.jpg', '.jpeg', '.webp', '.gif', '.svg']);
 
 const app = new Hono();
 
@@ -73,6 +77,18 @@ app.get('/uploads/:name', (c) => {
   });
 });
 
+app.get('/media/*', (c) => {
+  const rel = decodeURIComponent(c.req.path.slice('/media/'.length));
+  const path = normalize(join(MEDIA_DIR, rel));
+  if (!path.startsWith(MEDIA_DIR) || !existsSync(path)) return c.notFound();
+  const type = MEDIA_TYPES[extname(path).toLowerCase()];
+  if (!type) return c.notFound();
+  return c.body(readFileSync(path), 200, {
+    'content-type': type,
+    'cache-control': 'no-store, max-age=0',
+  });
+});
+
 // —— 登录 / 会话 ——
 // 登录失败限速：同 IP 10 分钟最多 10 次
 const loginFails = new Map();
@@ -94,7 +110,7 @@ app.post('/api/login', async (c) => {
     return c.json({ error: '用户名或密码不对' }, 401);
   }
   loginFails.delete(ip);
-  await setSignedCookie(c, COOKIE, `${user.username}:${Date.now() + SESSION_MS}`, SECRET, {
+  await setSignedCookie(c, COOKIE, `${user.username}:${Date.now() + SESSION_MS}:${user.token_version ?? 0}`, SECRET, {
     httpOnly: true,
     sameSite: 'Strict',
     path: '/',
@@ -103,7 +119,11 @@ app.post('/api/login', async (c) => {
   return c.json({ ok: true });
 });
 
-app.post('/api/logout', (c) => {
+// 登出递增会话版本号，已签发的 Cookie 服务端立即失效，而不只是删客户端 Cookie
+app.post('/api/logout', async (c) => {
+  const value = await getSignedCookie(c, SECRET, COOKIE);
+  const [username] = String(value || '').split(':');
+  if (username) bumpTokenVersion(username);
   deleteCookie(c, COOKIE, { path: '/' });
   return c.json({ ok: true });
 });
@@ -111,8 +131,9 @@ app.post('/api/logout', (c) => {
 // 除登录与静态资源外全部要求会话；页面重定向、API 返回 401
 app.use('*', async (c, next) => {
   const value = await getSignedCookie(c, SECRET, COOKIE);
-  const [, expiry] = String(value || '').split(':');
-  const valid = value && Number(expiry) > Date.now();
+  const [username, expiry, version] = String(value || '').split(':');
+  const user = value && Number(expiry) > Date.now() ? findUser(username) : null;
+  const valid = user && Number(version ?? 0) === (user.token_version ?? 0);
   if (!valid) {
     if (c.req.path.startsWith('/api/')) return c.json({ error: '未登录' }, 401);
     return c.redirect('/login');
@@ -164,6 +185,20 @@ app.get('/arena/prompts/:id', (c) => {
 });
 
 // —— 内容 API ——
+app.post('/api/content/upload', async (c) => {
+  const form = await c.req.parseBody();
+  const file = form.file;
+  if (!file || typeof file === 'string') throw new HttpError(400, '缺少文件');
+  if (file.size > MAX_UPLOAD) throw new HttpError(413, '文件超过 50MB 上限');
+  const ext = extname(file.name || '').toLowerCase();
+  if (!CONTENT_IMAGE_EXT.has(ext)) throw new HttpError(400, `只支持图片文件：${ext || '(无扩展名)'}`);
+  mkdirSync(CONTENT_UPLOAD_DIR, { recursive: true });
+  const name = `${randomUUID().slice(0, 13)}${ext}`;
+  const path = join(CONTENT_UPLOAD_DIR, name);
+  writeFileSync(path, Buffer.from(await file.arrayBuffer()));
+  gitCommit(`content: upload cover ${name}`, path);
+  return c.json({ url: `/uploads/content/${name}` }, 201);
+});
 app.get('/api/content/:collection', (c) => c.json({ entries: listEntries(withCollection(c)) }));
 app.get('/api/content/:collection/:slug', (c) =>
   c.json(readEntry(withCollection(c), assertSlug(c.req.param('slug')))),
@@ -296,5 +331,5 @@ if (firstPassword) {
   console.log('[admin] 忘记密码时：node admin/reset-password.mjs <新密码>');
 }
 
-serve({ fetch: app.fetch, port: PORT });
+serve({ fetch: app.fetch, port: PORT, ...(process.env.HOST ? { hostname: process.env.HOST } : {}) });
 console.log(`[admin] 管理后台已启动：http://localhost:${PORT}（存储适配器：${storage.name}）`);

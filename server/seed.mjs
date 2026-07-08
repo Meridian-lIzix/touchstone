@@ -25,11 +25,19 @@ const DATA = [
 
 // 每个 prompt 下挂多件模型作品，保证配对接口能随机抽到同题对比
 let works = 0;
-for (const p of DATA) {
-  const { lastInsertRowid: promptId } = insPrompt.run(p.category, p.text, '示例 prompt');
-  for (const m of p.models) {
-    insWork.run(p.category, Number(promptId), m, 'placeholder', now);
-    works++;
+try {
+  db.exec('BEGIN');
+  for (const p of DATA) {
+    const { lastInsertRowid: promptId } = insPrompt.run(p.category, p.text, '示例 prompt');
+    for (const m of p.models) {
+      insWork.run(p.category, Number(promptId), m, 'placeholder', now);
+      works++;
+    }
   }
+  db.exec('COMMIT');
+} catch (err) {
+  db.exec('ROLLBACK');
+  console.error(`[seed] 灌入失败，已回滚：${err.message}`);
+  process.exit(1);
 }
 console.log(`[seed] 灌入 ${DATA.length} 个 prompt、${works} 条占位作品（模型标签隐藏，翻牌可见）。`);

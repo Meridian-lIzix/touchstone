@@ -125,7 +125,7 @@ function gitIdentityArgs(run) {
   return identityArgs;
 }
 
-function gitCommit(message, path) {
+export function gitCommit(message, path) {
   const run = (args) => spawnSync('git', args, { cwd: REPO_ROOT, encoding: 'utf8' });
   const add = run(['add', '--', path]);
   if (add.status !== 0) throw new HttpError(500, `git add 失败：${add.stderr || add.stdout}`);

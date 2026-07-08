@@ -105,6 +105,22 @@ const bodyField = (value) => html`
     <textarea id="f-body" class="adm-body">${value ?? ''}</textarea>
   </div>`;
 
+const imageField = (id, label, value = '', hint = '') => html`
+  <div class="adm-field adm-cover-field">
+    <label for="f-${id}">${label}</label>
+    <div class="adm-row">
+      <input type="text" id="f-${id}" value="${value ?? ''}" placeholder="/uploads/content/cover.jpg 或 https://..." />
+      <label class="ts-btn ts-btn-ghost">
+        上传图片<input type="file" id="f-${id}-file" accept="image/*" hidden />
+      </label>
+    </div>
+    <div class="adm-cover-preview" id="f-${id}-preview" ${value ? '' : 'hidden'}>
+      <img src="${value ?? ''}" alt="" />
+      <span class="adm-media-url" id="f-${id}-preview-url">${value ?? ''}</span>
+    </div>
+    ${hint ? html`<span class="hint">${hint}</span>` : ''}
+  </div>`;
+
 const formShell = (collection, meta, isNew, slug, inner) => html`
   <div class="adm-page-head">
     <div>
@@ -157,6 +173,7 @@ export function reviewForm(entry, isNew) {
       ${selectField('chinese', '中文支持度', ['优秀', '良好', '一般', '差'], d.chinese ?? '良好')}
       ${textField('link', '官网链接（可空）', d.link ?? '')}
     </div>
+    ${imageField('cover', '封面图 / 实测截图', d.cover ?? '', '建议 16:9；会用于测评卡片、详情页顶部图和社交分享图。')}
     ${textField('dek', '一句话结论 dek', d.dek)}
     <div class="adm-grid-2">
       ${areaField('pros', '优点（每行一条）', (d.pros ?? []).join('\n'))}
@@ -173,11 +190,31 @@ export function reviewForm(entry, isNew) {
   `;
   const script = `
     ${submitPrelude('reviews', isNew, entry?.slug)}
+    function syncCoverPreview(url) {
+      const box = document.getElementById('f-cover-preview');
+      const img = box.querySelector('img');
+      const label = document.getElementById('f-cover-preview-url');
+      box.hidden = !url;
+      img.src = url || '';
+      label.textContent = url || '';
+    }
+    document.getElementById('f-cover').addEventListener('input', (e) => syncCoverPreview(e.target.value.trim()));
+    document.getElementById('f-cover-file').onchange = async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      try {
+        const r = await apiContentImageUpload(file);
+        document.getElementById('f-cover').value = r.url;
+        syncCoverPreview(r.url);
+        toast('封面已上传并提交，保存文章后生效');
+      } catch (err) { toast(err.message, true); }
+    };
     document.getElementById('entry-form').addEventListener('submit', (e) => {
       e.preventDefault();
       submitEntry({
         title: v('title'), tool: v('tool'), category: v('category'),
         date: v('date'), dek: v('dek'),
+        cover: v('cover') || undefined,
         rating: v('rating') === '' ? undefined : Number(v('rating')),
         pricing: v('pricing'),
         freeTier: chk('freeTier'), needsVpn: chk('needsVpn'),

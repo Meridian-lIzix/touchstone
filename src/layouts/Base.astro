@@ -1,5 +1,4 @@
 ---
-import '@fontsource-variable/source-serif-4';
 import '@fontsource-variable/inter';
 import '@fontsource-variable/hanken-grotesk';
 import '@fontsource/geist-mono';
@@ -23,7 +22,7 @@ interface Props {
 
 // 页面未传值时使用站点默认标题和描述，减少普通列表页重复配置
 const {
-  title = '试金石 Touchstone — AI 工具盲评与排行榜',
+  title = 'Touchstone — AI 工具盲评与排行榜',
   description = SITE.tagline,
   ogType = 'website',
   image,
@@ -74,7 +73,7 @@ const ldBlocks = jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [];
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
-    <meta property="og:site_name" content="试金石 Touchstone" />
+    <meta property="og:site_name" content="Touchstone" />
     <meta property="og:locale" content={SITE.locale} />
     {ogImage && <meta property="og:image" content={ogImage} />}
 

@@ -15,6 +15,7 @@ const { Content } = await render(entry);
 const d = entry.data;
 const url = abs(`/reviews/${entry.id}`, Astro.site);
 const dateStr = d.date.toISOString().slice(0, 10);
+const coverAbs = d.cover ? abs(d.cover, Astro.site) : undefined;
 
 // Review 结构化数据包含工具名、分类和评分
 const ld = reviewLd({
@@ -24,6 +25,7 @@ const ld = reviewLd({
   url,
   ratingValue: d.rating,
   datePublished: d.date.toISOString(),
+  image: coverAbs,
 });
 
 // 顶部事实卡把用户最关心的价格、免费额度、访问和中文支持放在一起
@@ -35,7 +37,7 @@ const facts = [
 ];
 ---
 
-<Base title={`${d.title} · 试金石 Touchstone`} description={d.dek} ogType="article" jsonLd={ld}>
+<Base title={`${d.title} · Touchstone`} description={d.dek} image={d.cover} ogType="article" jsonLd={ld}>
   <article class="mx-auto max-w-4xl px-6 pt-14 pb-20">
     <a href="/reviews" class="ts-eyebrow hover:text-primary">← 工具测评</a>
 
@@ -55,8 +57,12 @@ const facts = [
     <h1 class="mt-4 font-serif text-3xl font-semibold leading-tight sm:text-4xl">{d.title}</h1>
     <p class="mt-4 text-lg text-muted">{d.dek}</p>
 
-    <div class="mt-8 flex aspect-[16/9] items-center justify-center rounded-xl border border-dashed border-border bg-bg-subtle">
-      <span class="ts-eyebrow">实测截图 16:9</span>
+    <div class={`mt-8 flex aspect-[16/9] items-center justify-center overflow-hidden rounded-xl border ${d.cover ? 'border-border' : 'border-dashed border-border'} bg-bg-subtle`}>
+      {d.cover ? (
+        <img src={d.cover} alt="" class="h-full w-full object-cover" loading="eager" />
+      ) : (
+        <span class="ts-eyebrow">实测截图 16:9</span>
+      )}
     </div>
 
     <div class="mt-8 grid gap-px overflow-hidden rounded-xl border border-border bg-border sm:grid-cols-2">

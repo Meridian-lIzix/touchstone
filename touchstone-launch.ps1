@@ -7,6 +7,7 @@ param(
 $ErrorActionPreference = 'Stop'
 $Url = 'http://127.0.0.1:4321/'
 $ApiUrl = 'http://127.0.0.1:8787/api/leaderboard?category=image'
+$AdminUrl = 'http://localhost:8790/'
 
 # 未传 Root 时默认使用脚本所在目录，方便双击启动
 if ([string]::IsNullOrWhiteSpace($Root)) {
@@ -19,8 +20,16 @@ Set-Location -LiteralPath $Root
 
 Add-Type -AssemblyName System.Windows.Forms -ErrorAction SilentlyContinue
 
+function ShowStep([string]$Message) {
+  Write-Host ("[{0}] {1}" -f (Get-Date -Format 'HH:mm:ss'), $Message)
+}
+
+ShowStep 'Touchstone launcher started.'
+ShowStep "Project root: $Root"
+
 # 统一失败出口：能弹窗就弹窗，然后以非零状态退出
 function Fail([string]$Message) {
+  Write-Host ("[{0}] ERROR: {1}" -f (Get-Date -Format 'HH:mm:ss'), $Message) -ForegroundColor Red
   if ('System.Windows.Forms.MessageBox' -as [type]) {
     [System.Windows.Forms.MessageBox]::Show($Message, 'Touchstone', 0, 16) | Out-Null
   }
@@ -29,6 +38,7 @@ function Fail([string]$Message) {
 
 # 统一提示入口：当前只负责打开下载或说明链接
 function Ask([string]$Message, [string]$Url) {
+  ShowStep $Message
   if ($Url) {
     Start-Process $Url
   }
@@ -52,17 +62,25 @@ function TestUrl([string]$Target) {
 
 # 等待服务启动的通用轮询函数，当前保留给后续需要同步等待的场景
 function WaitUrl([string]$Target, [int]$Seconds) {
-  for ($i = 0; $i -lt $Seconds; $i++) {
+  ShowStep "Waiting for $Target"
+  $deadline = (Get-Date).AddSeconds($Seconds)
+  while ((Get-Date) -lt $deadline) {
     if (TestUrl $Target) {
+      ShowStep "Ready: $Target"
       return $true
     }
-    Start-Sleep -Seconds 1
+    Start-Sleep -Milliseconds 500
+  }
+  if (TestUrl $Target) {
+    ShowStep "Ready: $Target"
+    return $true
   }
   return $false
 }
 
 # 运行外部命令并检查退出码，失败时走统一错误提示
 function RunChecked([string]$FilePath, [string[]]$Arguments, [string]$FailureMessage) {
+  ShowStep ("Running: {0} {1}" -f $FilePath, ($Arguments -join ' '))
   & $FilePath @Arguments
   if ($LASTEXITCODE -ne 0) {
     Fail $FailureMessage
@@ -93,6 +111,23 @@ function DependenciesReady {
   return $true
 }
 
+function AstroGeneratedFilesReady {
+  $paths = @(
+    '.astro\content-assets.mjs',
+    '.astro\content-modules.mjs',
+    '.astro\content.d.ts',
+    '.astro\types.d.ts'
+  )
+
+  foreach ($path in $paths) {
+    if (-not (Test-Path -LiteralPath $path)) {
+      return $false
+    }
+  }
+
+  return $true
+}
+
 # 读取 SQLite 中 prompt 和作品数量，用于判断是否需要灌种子数据
 function GetDbCounts {
   $code = "import { db } from './server/db.mjs'; const prompts = db.prepare('SELECT COUNT(*) AS n FROM prompts').get().n; const works = db.prepare('SELECT COUNT(*) AS n FROM works').get().n; console.log(JSON.stringify({ prompts, works }));"
@@ -103,12 +138,33 @@ function GetDbCounts {
   return $output | ConvertFrom-Json
 }
 
-# 用隐藏窗口启动后台服务，避免用户桌面弹出多个终端
-function StartHidden([string]$FilePath, [string[]]$Arguments) {
-  Start-Process -FilePath $FilePath -ArgumentList $Arguments -WorkingDirectory $Root -WindowStyle Hidden
+function StartService([string]$FilePath, [string[]]$Arguments) {
+  ShowStep ("Starting service: {0} {1}" -f $FilePath, ($Arguments -join ' '))
+  Start-Process -FilePath $FilePath -ArgumentList $Arguments -WorkingDirectory $Root
+}
+
+function OpenPages {
+  ShowStep 'Opening Touchstone pages...'
+  Start-Sleep -Seconds 2
+  Start-Process $Url
+  Start-Process $AdminUrl
+}
+
+ShowStep 'Checking existing services...'
+
+$backendReady = TestUrl $ApiUrl
+$frontendReady = TestUrl $Url
+$adminReady = TestUrl $AdminUrl
+
+if ($backendReady -and $frontendReady -and $adminReady) {
+  ShowStep 'All services are ready.'
+  OpenPages
+  exit 0
 }
 
 # 基础运行环境检查：Node、node:sqlite、corepack 缺一不可
+ShowStep 'Checking local runtime...'
+
 if (-not (HasCommand 'node')) {
   Ask 'Node.js not found.' 'https://nodejs.org/en/download'
   Fail 'Install Node.js 24 or newer, then run this file again.'
@@ -130,29 +186,68 @@ if (-not (Test-Path -LiteralPath 'package.json') -or -not (Test-Path -LiteralPat
 }
 
 # 依赖缺失时按锁文件安装，保证和仓库记录版本一致
+ShowStep 'Checking project dependencies...'
+
 if (-not (DependenciesReady)) {
   Ask 'Installing project dependencies ...' ''
   RunChecked 'corepack' @('pnpm', 'install', '--frozen-lockfile') 'Dependency installation failed.'
 }
 
+ShowStep 'Checking Astro generated files...'
+
+if (-not (AstroGeneratedFilesReady)) {
+  RunChecked (Join-Path $Root 'node_modules\.bin\astro.cmd') @('sync') 'Astro content sync failed.'
+}
+
 # 数据库为空时灌入示例 prompt 和占位作品，保证盲评页面可用
+ShowStep 'Checking database seed data...'
+
 $counts = GetDbCounts
 if ($null -eq $counts -or $counts.prompts -lt 1 -or $counts.works -lt 2) {
   RunChecked 'node' @('--disable-warning=ExperimentalWarning', 'server\seed.mjs') 'Database initialization failed.'
 }
 
 # 如果服务已经在跑就复用现有进程，否则分别启动后端和前端
-$needBackend = -not (TestUrl $ApiUrl)
-$needFrontend = -not (TestUrl $Url)
+ShowStep 'Checking service readiness...'
+
+$backendReady = TestUrl $ApiUrl
+$frontendReady = TestUrl $Url
+$adminReady = TestUrl $AdminUrl
+
+$needBackend = -not $backendReady
+$needFrontend = -not $frontendReady
+$needAdmin = -not $adminReady
 
 if ($needBackend) {
-  StartHidden (Get-Command node).Source @('--disable-warning=ExperimentalWarning', 'server\index.mjs')
+  StartService (Get-Command node).Source @('--watch', '--disable-warning=ExperimentalWarning', 'server\index.mjs')
+} else {
+  ShowStep 'API service already running.'
 }
 
 if ($needFrontend) {
-  StartHidden (Join-Path $Root 'node_modules\.bin\astro.cmd') @('dev', '--host', '127.0.0.1')
+  StartService (Join-Path $Root 'node_modules\.bin\astro.cmd') @('preview', '--host', '127.0.0.1', '--port', '4321')
+} else {
+  ShowStep 'Frontend already running.'
+}
+
+if ($needAdmin) {
+  StartService (Get-Command node).Source @('--disable-warning=ExperimentalWarning', 'admin\index.mjs')
+} else {
+  ShowStep 'Admin service already running.'
+}
+
+if (-not (WaitUrl $ApiUrl 20)) {
+  Fail 'API service did not become ready.'
+}
+
+if (-not (WaitUrl $Url 20)) {
+  Fail 'Frontend did not become ready.'
+}
+
+if (-not (WaitUrl $AdminUrl 20)) {
+  Fail 'Admin service did not become ready.'
 }
 
 # 最后打开前端首页，脚本本身退出，不占用当前窗口
-Start-Process $Url
+OpenPages
 exit 0

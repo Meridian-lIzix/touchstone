@@ -1,10 +1,9 @@
-// 站点常量与 JSON-LD 构造器SEO 是这个站的命根子，结构化数据按页型选用
+// 站点常量与 JSON-LD 构造器；SEO 是这个站的命根子，结构化数据按页型选用
 
 // 全站共享品牌信息，页面标题、描述和结构化数据都从这里取默认值
 export const SITE = {
   name: 'Touchstone',
-  nameZh: '试金石',
-  tagline: '站长实测、用户盲评、贝叶斯排行的中文 AI 工具测评。卖判断，不卖链接。',
+  tagline: '站长实测、用户盲评、贝叶斯排行的中文 AI 工具测评 — 真金，不怕盲测',
   locale: 'zh_CN',
 } as const;
 
@@ -70,6 +69,7 @@ export function reviewLd(o: {
         ? { '@type': 'Rating', ratingValue: o.ratingValue, bestRating: 10, worstRating: 0 }
         : undefined,
     reviewBody: o.description,
+    image: o.image ? [o.image] : undefined,
     author: { '@type': 'Organization', name: SITE.name },
     publisher: { '@type': 'Organization', name: SITE.name },
   };

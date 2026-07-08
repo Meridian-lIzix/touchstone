@@ -10,6 +10,7 @@
     "seed": "node --disable-warning=ExperimentalWarning server/seed.mjs",
     "dev:api": "node --disable-warning=ExperimentalWarning --watch server/index.mjs",
     "dev:admin": "node --disable-warning=ExperimentalWarning --watch admin/index.mjs",
+    "start:web": "node --disable-warning=ExperimentalWarning server/web.mjs",
     "dev:all": "concurrently -n web,api -c blue,green \"pnpm dev\" \"pnpm dev:api\""
   },
   "dependencies": {
@@ -22,10 +23,12 @@
     "@hono/node-server": "^2.0.5",
     "astro": "^5.0.0",
     "astro-pagefind": "^2.0.0",
+    "esbuild": "^0.27.7",
     "hono": "^4.12.25",
     "motion": "^12.40.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
+    "three": "^0.185.1",
     "yaml": "^2.8.0"
   },
   "devDependencies": {

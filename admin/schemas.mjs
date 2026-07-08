@@ -9,6 +9,7 @@ const reviews = z.object({
   category: z.string().min(1),
   date: z.coerce.date(),
   dek: z.string().min(1),
+  cover: z.string().optional(),
   rating: z.number().min(0).max(10).optional(),
   pricing: z.string().min(1),
   freeTier: z.boolean().default(false),

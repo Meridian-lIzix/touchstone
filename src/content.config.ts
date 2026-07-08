@@ -12,6 +12,7 @@ const reviews = defineCollection({
     category: z.string(), // AI 修图 / AI 写作 / AI 编程 …
     date: z.coerce.date(), // 最近更新
     dek: z.string(), // 一句话结论 / 态度
+    cover: z.string().optional(),
     rating: z.number().min(0).max(10).optional(),
     pricing: z.string(), // 价格 / 免费额度（定性）
     freeTier: z.boolean().default(false),

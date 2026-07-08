@@ -17,15 +17,15 @@ const ld = itemListLd({
 ---
 
 <Base
-  title="工具测评 · 试金石 Touchstone"
-  description="站长实测的 AI 工具测评：优缺点、价格与免费额度、是否需要梯子、中文支持度，外加一句不绕弯的态度。"
+  title="工具测评 · Touchstone"
+  description="站长实测的 AI 工具测评：优缺点、价格与免费额度、是否需要梯子、中文支持度，外加一句不绕弯的态度"
   jsonLd={ld}
 >
   <section class="mx-auto max-w-7xl px-6 pt-16 pb-10">
     <p class="ts-eyebrow">Reviews · 工具测评</p>
     <h1 class="mt-4 font-serif text-4xl font-semibold sm:text-5xl">工具测评</h1>
     <p class="mt-4 max-w-[58ch] text-lg text-muted">
-      实测截图、优缺点、价格与免费额度、是否需要梯子、中文支持度——外加一句不绕弯的站长态度。
+      实测截图、优缺点、价格与免费额度、是否需要梯子、中文支持度——外加一句不绕弯的站长态度
     </p>
   </section>
 
@@ -37,8 +37,12 @@ const ld = itemListLd({
           class="ts-card group flex flex-col overflow-hidden transition-transform duration-300 hover:-translate-y-1 ts-rise"
           style={`animation-delay:${i * 60}ms`}
         >
-          <div class="flex aspect-[16/9] items-center justify-center border-b border-border bg-bg-subtle">
-            <span class="ts-eyebrow">封面 16:9</span>
+          <div class="flex aspect-[16/9] items-center justify-center overflow-hidden border-b border-border bg-bg-subtle">
+            {r.data.cover ? (
+              <img src={r.data.cover} alt="" class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]" loading="lazy" />
+            ) : (
+              <span class="ts-eyebrow">封面 16:9</span>
+            )}
           </div>
           <div class="flex flex-1 flex-col p-5">
             <div class="flex items-center gap-2">

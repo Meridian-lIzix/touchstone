@@ -23,10 +23,10 @@ const semantic = [
 // 字阶样张用于核对标题、正文、弱化文字和数字字体
 const typeScale = [
   { label: 'Display / H1', cls: 'font-serif font-semibold', size: 'clamp(2.5rem,6vw,4.5rem)', sample: '哪个 AI 真能打' },
-  { label: 'H2', cls: 'font-serif font-semibold', size: '2rem', sample: '当期榜单 · 本月' },
+  { label: 'H2', cls: 'font-serif font-semibold', size: '2rem', sample: '当期榜单 · AI 生图' },
   { label: 'H3', cls: 'font-serif font-semibold', size: '1.375rem', sample: '让它接手一个真项目' },
-  { label: 'Body', cls: 'font-sans', size: '1.0625rem', sample: '作品匿名上台，由你盲评。排行榜用贝叶斯评分撑着。' },
-  { label: 'Muted', cls: 'font-sans text-muted', size: '0.95rem', sample: '真实模型标签翻牌后揭晓。' },
+  { label: 'Body', cls: 'font-sans', size: '1.0625rem', sample: '作品匿名上台，由你盲评；排行榜用贝叶斯评分撑着' },
+  { label: 'Muted', cls: 'font-sans text-muted', size: '0.95rem', sample: '模型身份只用于榜单统计' },
   { label: 'Mono / 数字', cls: 'ts-num', size: '1.0625rem', sample: '8.7 · 1,240 票 · #01' },
 ];
 
@@ -41,13 +41,13 @@ const radii = [
 ];
 ---
 
-<Base title="设计系统 · 试金石 Touchstone" description="Touchstone 设计令牌预览：色彩、字体、间距、组件与动效。">
+<Base title="设计系统 · Touchstone" description="Touchstone 设计令牌预览：色彩、字体、间距、组件与动效">
   <section class="mx-auto max-w-7xl px-6 pt-16 pb-10">
     <p class="ts-eyebrow">Design System · Style Guide</p>
     <h1 class="mt-4 font-serif text-4xl font-semibold sm:text-5xl">设计系统预览</h1>
     <p class="mt-4 max-w-[58ch] text-lg text-muted">
-      warm editorial minimalism —— 暖编辑型极简。全站唯一视觉方向。
-      点右上角图标切换深浅色，观察令牌的暗色适配（默认浅色，记住你的选择）。
+      warm editorial minimalism —— 暖编辑型极简；全站唯一视觉方向
+      点右上角图标切换深浅色，观察令牌的暗色适配（默认浅色，记住你的选择）
     </p>
   </section>
 
@@ -77,7 +77,7 @@ const radii = [
       ))}
     </div>
     <p class="mt-6 text-sm text-muted">
-      珊瑚陶土只用于点睛（CTA / 强调 / 活跃态），绝不大面积铺。语义色低饱和，不破坏暖调。
+      珊瑚陶土只用于点睛（CTA / 强调 / 活跃态），绝不大面积铺；语义色低饱和，不破坏暖调
     </p>
   </section>
 
@@ -146,7 +146,7 @@ const radii = [
           <button class="ts-btn ts-btn-primary opacity-50" disabled>禁用</button>
           <a href="#" class="text-sm text-primary underline-offset-4 hover:underline">文字链接</a>
         </div>
-        <p class="text-xs text-muted">悬停换深一档主色，按下轻微下沉 1px，焦点环为主色描边。</p>
+        <p class="text-xs text-muted">悬停换深一档主色，按下轻微下沉 1px，焦点环为主色描边</p>
 
         <h3 class="ts-eyebrow pt-3">标签 / Chips</h3>
         <div class="flex flex-wrap gap-2">
@@ -166,7 +166,7 @@ const radii = [
           <div class="p-5">
             <span class="ts-eyebrow text-primary">AI 编程</span>
             <h4 class="mt-2 font-serif text-xl font-semibold">让它接手一个真项目</h4>
-            <p class="mt-2 text-sm text-muted">补全很顺，重构翻车——边界比宣传里窄。</p>
+            <p class="mt-2 text-sm text-muted">补全很顺，重构翻车——边界比宣传里窄</p>
           </div>
         </article>
       </div>
@@ -177,9 +177,9 @@ const radii = [
   <section class="mx-auto max-w-7xl px-6 py-10 pb-24">
     <h2 class="border-b border-border pb-3 font-serif text-2xl font-semibold">动效</h2>
     <p class="mt-4 max-w-[58ch] text-sm text-muted">
-      一套基调——柔和弹簧 + 列表错位入场 + 平滑滚动。本页所有卡片即用错位入场；
-      复杂交互（盲评、可排序横评表）才上 <code class="ts-num">motion</code> 库。
-      全程尊重 <code class="ts-num">prefers-reduced-motion</code>：关闭动画偏好时一律静止。
+      一套基调——柔和弹簧 + 列表错位入场 + 平滑滚动；本页所有卡片即用错位入场；
+      复杂交互（盲评、可排序横评表）才上 <code class="ts-num">motion</code> 库
+      全程尊重 <code class="ts-num">prefers-reduced-motion</code>：关闭动画偏好时一律静止
     </p>
     <div class="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
       {[0, 1, 2, 3].map((i) => (

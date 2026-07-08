@@ -31,6 +31,9 @@ export function startBuild() {
     shell: process.platform === 'win32',
     env: process.env,
   });
+  // 显式按 UTF-8 解码，避免多字节字符被 chunk 边界截断成乱码
+  child.stdout.setEncoding('utf8');
+  child.stderr.setEncoding('utf8');
   const append = (chunk) => {
     state.log = (state.log + chunk).slice(-LOG_LIMIT);
   };

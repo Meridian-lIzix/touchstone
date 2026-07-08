@@ -65,6 +65,15 @@ async function apiUpload(file) {
   return data;
 }
 
+async function apiContentImageUpload(file) {
+  const fd = new FormData();
+  fd.append('file', file);
+  const res = await fetch('/api/content/upload', { method: 'POST', body: fd });
+  const data = await res.json().catch(() => null);
+  if (!res.ok) throw new Error((data && data.error) || `上传失败（${res.status}）`);
+  return data;
+}
+
 // 通用动态行：rows = 数据数组，render(row, update) 返回一行内部的 DOM
 function rowsEditor(container, rows, render, onChange) {
   const rerender = () => {
@@ -93,7 +102,7 @@ function rowsEditor(container, rows, render, onChange) {
 function textInput(value, placeholder, onInput) {
   const el = document.createElement('input');
   el.type = 'text';
-  el.value = value || '';
+  el.value = value ?? '';
   el.placeholder = placeholder || '';
   el.addEventListener('input', () => onInput(el.value));
   return el;

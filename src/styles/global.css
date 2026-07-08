@@ -108,9 +108,9 @@ body > footer {
 /* —— 共享原子：编辑型按钮 / 卡片（克制，供 .astro 复用）—— */
 @layer components {
   .ts-btn {
-    display: inline-flex; align-items: center; gap: 0.5rem;
-    padding: 0.6rem 1.1rem; border-radius: 0.5rem;
-    font-size: 0.95rem; font-weight: 500;
+    display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+    min-height: 2.375rem; padding: 0 1.1rem; border: 1px solid transparent; border-radius: 0.5rem;
+    font-size: 0.95rem; font-weight: 500; line-height: 1; white-space: nowrap;
     transition: background-color 0.25s ease, color 0.25s ease,
                 border-color 0.25s ease, transform 0.25s ease;
   }
@@ -124,6 +124,10 @@ body > footer {
     background: transparent;
   }
   .ts-btn-ghost:hover { border-color: var(--primary); color: var(--primary); }
+  .ts-btn-sm {
+    min-height: 1.875rem; padding: 0 0.75rem; border-radius: 0.4rem;
+    font-size: 0.82rem;
+  }
 
   .ts-card {
     background: var(--surface);

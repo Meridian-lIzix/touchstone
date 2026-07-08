@@ -21,6 +21,18 @@ adminDb.exec(`
   );
 `);
 
+// 会话版本号：登出时递增，使已签发的 Cookie 立即失效
+{
+  const cols = adminDb.prepare('PRAGMA table_info(admin_users)').all().map((r) => r.name);
+  if (!cols.includes('token_version')) {
+    adminDb.exec('ALTER TABLE admin_users ADD COLUMN token_version INTEGER NOT NULL DEFAULT 0');
+  }
+}
+
+export function bumpTokenVersion(username) {
+  adminDb.prepare('UPDATE admin_users SET token_version = token_version + 1 WHERE username = ?').run(username);
+}
+
 // 存储格式 salt:hash，两段都是 hex；校验走 timingSafeEqual 防时序侧信道
 export function hashPassword(password) {
   const salt = randomBytes(16).toString('hex');

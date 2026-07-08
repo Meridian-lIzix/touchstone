@@ -1,0 +1,73 @@
+name: Deploy Touchstone
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: touchstone-production
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.17.0
+
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.25.0 --activate
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build site
+        run: pnpm build
+
+      - name: Create release package
+        run: |
+          tar -czf touchstone-release.tgz \
+            astro.config.mjs \
+            package.json \
+            pnpm-lock.yaml \
+            pnpm-workspace.yaml \
+            tsconfig.json \
+            dist \
+            src \
+            public \
+            server \
+            admin \
+            node_modules \
+            scripts
+
+      - name: Install sshpass
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y sshpass
+
+      - name: Upload package
+        env:
+          TOUCHSTONE_SSH_HOST: ${{ secrets.TOUCHSTONE_SSH_HOST }}
+          TOUCHSTONE_SSH_PORT: ${{ secrets.TOUCHSTONE_SSH_PORT }}
+          TOUCHSTONE_SSH_USER: ${{ secrets.TOUCHSTONE_SSH_USER }}
+          TOUCHSTONE_SSH_PASSWORD: ${{ secrets.TOUCHSTONE_SSH_PASSWORD }}
+        run: |
+          sshpass -p "$TOUCHSTONE_SSH_PASSWORD" ssh -p "$TOUCHSTONE_SSH_PORT" -o StrictHostKeyChecking=accept-new "$TOUCHSTONE_SSH_USER@$TOUCHSTONE_SSH_HOST" "mkdir -p /opt/touchstone/incoming"
+          sshpass -p "$TOUCHSTONE_SSH_PASSWORD" scp -P "$TOUCHSTONE_SSH_PORT" touchstone-release.tgz "$TOUCHSTONE_SSH_USER@$TOUCHSTONE_SSH_HOST:/opt/touchstone/incoming/${GITHUB_SHA}.tgz"
+
+      - name: Activate release
+        env:
+          TOUCHSTONE_SSH_HOST: ${{ secrets.TOUCHSTONE_SSH_HOST }}
+          TOUCHSTONE_SSH_PORT: ${{ secrets.TOUCHSTONE_SSH_PORT }}
+          TOUCHSTONE_SSH_USER: ${{ secrets.TOUCHSTONE_SSH_USER }}
+          TOUCHSTONE_SSH_PASSWORD: ${{ secrets.TOUCHSTONE_SSH_PASSWORD }}
+        run: |
+          sshpass -p "$TOUCHSTONE_SSH_PASSWORD" ssh -p "$TOUCHSTONE_SSH_PORT" "$TOUCHSTONE_SSH_USER@$TOUCHSTONE_SSH_HOST" "RELEASE_ID=${GITHUB_SHA} PACKAGE_PATH=/opt/touchstone/incoming/${GITHUB_SHA}.tgz bash /opt/touchstone/current/scripts/deploy-remote.sh"

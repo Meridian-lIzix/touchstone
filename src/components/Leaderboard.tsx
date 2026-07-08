@@ -1,7 +1,14 @@
 import { useEffect, useState } from 'react';
 
-// 排行榜直接读盲评 API；生产环境可用 PUBLIC_API_BASE 改成正式接口
-const API = (import.meta.env.PUBLIC_API_BASE as string) ?? 'http://localhost:8787';
+const apiBase = () => {
+  const configured = (import.meta.env.PUBLIC_API_BASE as string | undefined)?.trim();
+  if (configured) return configured.replace(/\/$/, '');
+  if (typeof window === 'undefined') return 'http://127.0.0.1:8787';
+  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+    return `${window.location.protocol}//${window.location.hostname}:8787`;
+  }
+  return window.location.origin;
+};
 
 // 后端返回的是模型聚合行，不是单件作品
 type Row = { rank: number; model: string; elo: number; votes: number; works: number };
@@ -30,7 +37,7 @@ export default function Leaderboard() {
     // alive 防止组件卸载后异步回调继续写 state
     let alive = true;
     setStatus('loading');
-    fetch(`${API}/api/leaderboard?category=${encodeURIComponent(category)}`)
+    fetch(`${apiBase()}/api/leaderboard?category=${encodeURIComponent(category)}`)
       .then((r) => (r.ok ? r.json() : Promise.reject()))
       .then((data) => {
         if (!alive) return;
@@ -70,12 +77,12 @@ export default function Leaderboard() {
       {status === 'error' && (
         <div className="ts-card p-8 text-center">
           <p className="font-medium">连不上盲评服务</p>
-          <p className="mt-2 text-sm text-muted">本地需先启动后端：<code className="ts-num">pnpm dev:api</code>（或 <code className="ts-num">pnpm dev:all</code>）。</p>
+          <p className="mt-2 text-sm text-muted">本地需先启动后端：<code className="ts-num">pnpm dev:api</code>（或 <code className="ts-num">pnpm dev:all</code>）</p>
         </div>
       )}
 
       {status === 'ready' && rows.length === 0 && (
-        <div className="ts-card p-8 text-center text-muted">该品类暂无数据，去 <a href="/arena" className="text-primary hover:underline">盲评</a> 几对再来看。</div>
+        <div className="ts-card p-8 text-center text-muted">该品类暂无数据，去 <a href="/arena" className="text-primary hover:underline">盲评</a> 几对再来看</div>
       )}
 
       {status === 'ready' && rows.length > 0 && (
@@ -119,7 +126,7 @@ export default function Leaderboard() {
       )}
 
       <p className="mt-4 text-xs text-muted">
-        Elo 评分由用户成对盲选实时更新；样本量越大越可信。模型名是聚合结果——盲的是投票过程，不是榜单。
+        Elo 评分由用户成对盲选实时更新；样本量越大越可信；模型名是聚合结果——盲的是投票过程，不是榜单
       </p>
     </div>
   );

@@ -1,5 +1,6 @@
 ---
 import Base from '../layouts/Base.astro';
+import HomeRanking from '../components/HomeRanking.tsx';
 import { getCollection } from 'astro:content';
 
 // 首页只取最新的可发布内容，避免草稿进入公开页面
@@ -12,13 +13,6 @@ const collections = (await getCollection('collections', ({ data }) => !data.draf
 const news = (await getCollection('news', ({ data }) => !data.draft))
   .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
   .slice(0, 4);
-
-// 当期榜单占位：后续接入真实排行榜 API 后替换这组静态数据
-const rankings = [
-  { rank: 1, name: '候选 A', score: '8.7', votes: '1,240' },
-  { rank: 2, name: '候选 B', score: '8.3', votes: '1,198' },
-  { rank: 3, name: '候选 C', score: '7.9', votes: '1,251' },
-];
 
 // 情报类型映射到语义色，新增类型时同步补这里
 const kindColor: Record<string, string> = {
@@ -49,14 +43,14 @@ const reviewMeta = (d: { pricing: string; needsVpn: boolean; chinese: string }) 
       class="mt-5 max-w-[16ch] font-serif font-semibold tracking-tight ts-rise"
       style="font-size:clamp(2.5rem,6vw,4.5rem);animation-delay:60ms"
     >
-      哪个 AI 真能打，<br />让盲评数据说话。
+      哪个 AI 真能打，<br />让盲评数据说话
     </h1>
     <p class="mt-6 max-w-[52ch] text-lg text-muted ts-rise" style="animation-delay:120ms">
-      同一套提示词喂给不同模型，作品匿名上台，由你盲评。排行榜用贝叶斯评分撑着——不是某个博主一张嘴的主观吹捧。
+      同一套提示词喂给不同模型，作品匿名上台，由你盲评；排行榜用贝叶斯评分撑着——不是某个博主一张嘴的主观吹捧
     </p>
     <div class="mt-9 flex flex-wrap items-center gap-3 ts-rise" style="animation-delay:180ms">
       <a href="/leaderboard" class="ts-btn ts-btn-primary">
-        看本月榜单
+        看盲测榜单
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <path d="M5 12h14m-6-6 6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
         </svg>
@@ -71,27 +65,10 @@ const reviewMeta = (d: { pricing: string; needsVpn: boolean; chinese: string }) 
   {/* —— 当期榜单精选（第二阶段数据）—— */}
   <section class="mx-auto max-w-7xl px-6 py-14">
     <div class="flex items-end justify-between gap-4 border-b border-border pb-4">
-      <h2 class="font-serif text-2xl font-semibold">当期榜单 · AI 修图 / 本月</h2>
-      <span class="ts-eyebrow hidden shrink-0 sm:block">示例结构 · 数据 Phase 2 接入</span>
+      <h2 class="font-serif text-2xl font-semibold">当期榜单 · AI 生图</h2>
+      <span class="ts-eyebrow hidden shrink-0 sm:block">Arena 实时数据</span>
     </div>
-    <div class="mt-8 grid gap-5 md:grid-cols-3">
-      {rankings.map((r, i) => (
-        <article class="ts-card group overflow-hidden p-5 transition-transform duration-300 hover:-translate-y-1 ts-rise" style={`animation-delay:${i * 70}ms`}>
-          <div class="flex items-start justify-between">
-            <span class="ts-num font-serif text-4xl font-semibold leading-none">{r.rank}</span>
-            <span class="ts-num rounded-md bg-bg-subtle px-2 py-1 text-sm font-medium text-primary">{r.score}</span>
-          </div>
-          <div class="mt-4 flex aspect-[4/3] items-center justify-center rounded-lg border border-dashed border-border bg-bg-subtle">
-            <span class="ts-eyebrow">封面 4:3</span>
-          </div>
-          <div class="mt-4 flex items-center justify-between text-sm">
-            <span class="font-medium">{r.name}</span>
-            <span class="text-muted">盲评样本 <span class="ts-num">{r.votes}</span></span>
-          </div>
-          <p class="mt-1 text-xs text-muted">真实模型标签翻牌后揭晓</p>
-        </article>
-      ))}
-    </div>
+    <HomeRanking client:load />
   </section>
 
   {/* —— 最新测评 —— */}
@@ -107,8 +84,12 @@ const reviewMeta = (d: { pricing: string; needsVpn: boolean; chinese: string }) 
           class="ts-card group flex flex-col overflow-hidden transition-transform duration-300 hover:-translate-y-1 ts-rise"
           style={`animation-delay:${i * 70}ms`}
         >
-          <div class="flex aspect-[16/9] items-center justify-center border-b border-border bg-bg-subtle">
-            <span class="ts-eyebrow">封面 16:9</span>
+          <div class="flex aspect-[16/9] items-center justify-center overflow-hidden border-b border-border bg-bg-subtle">
+            {r.data.cover ? (
+              <img src={r.data.cover} alt="" class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]" loading="lazy" />
+            ) : (
+              <span class="ts-eyebrow">封面 16:9</span>
+            )}
           </div>
           <div class="flex flex-1 flex-col p-5">
             <span class="ts-eyebrow text-primary">{r.data.category}</span>

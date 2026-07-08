@@ -1,0 +1,1268 @@
+---
+import '@fontsource-variable/hanken-grotesk';
+import '@fontsource-variable/inter';
+import '@fontsource/geist-mono/400.css';
+import '../styles/tokens.css';
+
+const MEMBERS = [
+  { name: '黎子霄', role: '组长 · 技术 / 设计', desc: '前后端与设计系统，产品整体把关' },
+  { name: '瞿洪骏', role: '测试 / QA', desc: '盲评防刷验证与上线前全站校对' },
+  { name: '刘宇航', role: '内容 / 测评', desc: '图像生成赛道的实测与横评' },
+  { name: '赵星亮', role: '内容 / 测评', desc: '代码生成赛道的实测与横评' },
+  { name: '王玲', role: '内容 / 测评', desc: '文案写作赛道的实测与横评' },
+  { name: '杨仪川', role: '文案 / 答辩', desc: '课程交付物与演示文稿' },
+  { name: '邬君彤', role: '文案 / 答辩', desc: '答辩演讲与对外文案' },
+  { name: 'Claude Fable 5', role: '全站架构 / 开发', desc: 'AI engineering partner · Anthropic', badge: 'AI' },
+];
+
+const GAP_CHIPS = ['盲测', '投票', '多模态', '中文', '免注册'];
+const NAV_CHIPS = ['图像', '写作', '编程', '视频', '自动化'];
+const TOTAL_SCENES = 10;
+---
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Touchstone 路演开场" />
+    <link rel="icon" href="/favicon.svg" />
+    <title>Touchstone 介绍</title>
+  </head>
+  <body>
+    <main class="screen" id="screen">
+      <canvas id="gl"></canvas>
+      <audio id="bgm" src="/introduce/bgm.mp3" preload="auto"></audio>
+      <div class="vignette"></div>
+      <div class="grain"></div>
+
+      <section class="overlay overlay-hero is-active" data-scene="0" aria-hidden="false">
+        <p class="kicker">THE ANAMNESIS.TEAM · 创新创业路演</p>
+        <h1 class="latin brand">TOUCHSTONE</h1>
+        <p class="subline">Touchstone — 真金，不怕盲测</p>
+      </section>
+
+      <section class="overlay" data-scene="1" aria-hidden="true">
+        <p class="kicker">团队 · 为什么叫这个名字</p>
+        <h2 class="brand">The Anamnesis.team</h2>
+        <p class="line narrow">取自柏拉图的 Anamnesis「回忆说」——真知不是灌输而来，而是被唤起的<br />正如 Touchstone：剥掉品牌标签，唤起你自己真实的判断</p>
+      </section>
+
+      <section class="overlay" data-scene="2" aria-hidden="true">
+        <p class="kicker">成员 · 七人与一位 AI 伙伴</p>
+        <div class="member-ring">
+          {MEMBERS.map((member) => (
+            <div class:list={['member', member.badge ? 'is-ai' : '']}>
+              <strong>{member.name}</strong>
+              <span>{member.role}</span>
+              {member.desc && <em class:list={[member.badge ? 'is-latin' : '']}>{member.desc}</em>}
+              {member.badge && <b>{member.badge}</b>}
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section class="overlay overlay-problem" data-scene="3" aria-hidden="true">
+        <p class="kicker">问题 · 选择过载</p>
+        <div class="stat-row">
+          <div class="stat">
+            <strong data-count="6亿">6亿</strong>
+            <span>中国生成式 AI 用户</span>
+          </div>
+          <div class="stat">
+            <strong data-count="14000+">14000+</strong>
+            <span>市面 AI 工具</span>
+          </div>
+        </div>
+        <p class="line">不是没得选，是没法选</p>
+      </section>
+
+      <section class="overlay" data-scene="4" aria-hidden="true">
+        <p class="kicker">调研 · 信任正在崩塌</p>
+        <div class="stat-row">
+          <div class="stat">
+            <strong data-count="340%">340%</strong>
+            <span>测评类笔记互动量 · 年增</span>
+          </div>
+          <div class="stat">
+            <strong>六位数</strong>
+            <span>KOL 单篇商单报价</span>
+          </div>
+        </div>
+        <p class="line">软文泛滥，榜单黑箱——独立验证成为刚需</p>
+      </section>
+
+      <section class="overlay overlay-gap" data-scene="5" aria-hidden="true">
+        <p class="kicker">市场 · 结构空白</p>
+        <div class="chip-row">
+          {GAP_CHIPS.map((chip) => <span class="chip">{chip}</span>)}
+        </div>
+        <p class="line">五要素同时满足者：<strong class="zero">0</strong></p>
+      </section>
+
+      <section class="overlay overlay-solution" data-scene="6" aria-hidden="true">
+        <p class="kicker">解法 · Touchstone 机制</p>
+        <h2>实测 × 盲评 × 排行</h2>
+        <p class="line flow">同题生成 <i>→</i> 匿名盲选 <i>→</i> 公开榜单</p>
+      </section>
+
+      <section class="overlay" data-scene="7" aria-hidden="true">
+        <p class="kicker">算法 · 让票数可信</p>
+        <h2>Elo · K = 32</h2>
+        <p class="line flow">成对盲选 <i>→</i> 设备指纹去重 <i>→</i> 异常投票检测</p>
+      </section>
+
+      <section class="overlay" data-scene="8" aria-hidden="true">
+        <p class="kicker">产品 · 场景化工具导航</p>
+        <h2>按场景，找对工具</h2>
+        <div class="chip-row">
+          {NAV_CHIPS.map((chip) => <span class="chip">{chip}</span>)}
+        </div>
+      </section>
+
+      <section class="overlay overlay-enter" data-scene="9" aria-hidden="true">
+        <p class="kicker">Touchstone · ISSUE 00</p>
+        <h2 class="enter-title">开始，就现在</h2>
+        <a class="enter-link" href="/" data-enter>Enter Touchstone →</a>
+      </section>
+
+      <div class="hud">
+        <p class="hint" id="hint">
+          <span>滚动</span><i>·</i><span>方向键</span><i>·</i><button type="button" id="skipBtn">跳过</button><i>·</i><button type="button" id="musicBtn">音乐</button>
+        </p>
+        <p class="indicator" id="indicator">01 / {String(TOTAL_SCENES).padStart(2, '0')}</p>
+      </div>
+
+      <div class="veil" id="veil" aria-hidden="true">
+        <h1 class="brand">Welcome to Touchstone</h1>
+        <div></div>
+        <p>Touchstone — 真金，不怕盲测</p>
+      </div>
+    </main>
+
+    <script>
+      import * as THREE from 'three';
+
+      const COUNT = 24000;
+      const TOTAL = 10;
+      const CREAM = new THREE.Color('#FAF3E7');
+      const CORAL = new THREE.Color('#CC785C');
+      const AMBER = new THREE.Color('#E8B98A');
+
+      const canvas = document.getElementById('gl');
+      const overlays = Array.from(document.querySelectorAll('.overlay'));
+      const hint = document.getElementById('hint');
+      const indicator = document.getElementById('indicator');
+      const veil = document.getElementById('veil');
+      const screenEl = document.getElementById('screen');
+      const bgm = document.getElementById('bgm');
+      const skipBtn = document.getElementById('skipBtn');
+      const musicBtn = document.getElementById('musicBtn');
+
+      const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, alpha: false, powerPreference: 'high-performance' });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.75));
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setClearColor(new THREE.Color('#14110E'), 1);
+
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 400);
+      camera.position.set(0, 0, 52);
+
+      const rand = (min, max) => min + Math.random() * (max - min);
+      const gauss = () => (Math.random() + Math.random() + Math.random() - 1.5) / 1.5;
+
+      const makeSaturn = () => {
+        const arr = new Float32Array(COUNT * 3);
+        const tiltX = 0.52;
+        const tiltZ = -0.3;
+        for (let i = 0; i < COUNT; i += 1) {
+          const band = Math.random();
+          let radius;
+          if (band < 0.28) radius = rand(14, 18.5);
+          else if (band < 0.4) radius = rand(19.5, 21);
+          else if (band < 0.86) radius = rand(22, 28.5);
+          else radius = rand(30, 33.5);
+          const angle = Math.random() * Math.PI * 2;
+          const x = Math.cos(angle) * radius;
+          const y = gauss() * 0.5;
+          const z = Math.sin(angle) * radius;
+          const y2 = y * Math.cos(tiltX) - z * Math.sin(tiltX);
+          const z2 = y * Math.sin(tiltX) + z * Math.cos(tiltX);
+          arr[i * 3] = x * Math.cos(tiltZ) - y2 * Math.sin(tiltZ);
+          arr[i * 3 + 1] = x * Math.sin(tiltZ) + y2 * Math.cos(tiltZ);
+          arr[i * 3 + 2] = z2;
+        }
+        return arr;
+      };
+
+      const makeVortex = () => {
+        const arr = new Float32Array(COUNT * 3);
+        for (let i = 0; i < COUNT; i += 1) {
+          const t = Math.random();
+          const angle = t * Math.PI * 6 + rand(-0.25, 0.25);
+          const radius = 4 + (1 - t) * 24 + gauss() * 1.2;
+          arr[i * 3] = Math.cos(angle) * radius;
+          arr[i * 3 + 1] = (t - 0.5) * 17 + gauss() * 1.3;
+          arr[i * 3 + 2] = Math.sin(angle) * radius;
+        }
+        return arr;
+      };
+
+      const makeFracture = () => {
+        const arr = new Float32Array(COUNT * 3);
+        const tilt = 0.24;
+        for (let i = 0; i < COUNT; i += 1) {
+          const u = rand(-25, 25);
+          const v = rand(-13, 13);
+          const side = v > u * 0.32 + gauss() * 0.4 ? 1 : -1;
+          const x = u + side * 1.7;
+          const y = v + side * 1.1;
+          const z = gauss() * 0.9 + side * 1.4;
+          arr[i * 3] = x;
+          arr[i * 3 + 1] = y * Math.cos(tilt) - z * Math.sin(tilt);
+          arr[i * 3 + 2] = y * Math.sin(tilt) + z * Math.cos(tilt);
+        }
+        return arr;
+      };
+
+      const makeDuel = () => {
+        const arr = new Float32Array(COUNT * 3);
+        for (let i = 0; i < COUNT; i += 1) {
+          const lane = i % 10;
+          if (lane < 4) {
+            arr[i * 3] = -14 + gauss() * 4.4;
+            arr[i * 3 + 1] = gauss() * 4.4;
+            arr[i * 3 + 2] = gauss() * 4.4;
+          } else if (lane < 8) {
+            arr[i * 3] = 14 + gauss() * 4.4;
+            arr[i * 3 + 1] = gauss() * 4.4;
+            arr[i * 3 + 2] = gauss() * 4.4;
+          } else {
+            const t = Math.random();
+            arr[i * 3] = -14 + 28 * t;
+            arr[i * 3 + 1] = Math.sin(t * Math.PI) * (lane === 8 ? 5.5 : -5.5) + gauss() * 0.5;
+            arr[i * 3 + 2] = gauss() * 0.9;
+          }
+        }
+        return arr;
+      };
+
+      const makeCube = () => {
+        const arr = new Float32Array(COUNT * 3);
+        const s = 8.5;
+        const yaw = 0.66;
+        const pitch = -0.38;
+        const cy = Math.cos(yaw), sy = Math.sin(yaw);
+        const cp = Math.cos(pitch), sp = Math.sin(pitch);
+        const edges = [
+          [[-s, -s, -s], [s, -s, -s]], [[-s, s, -s], [s, s, -s]], [[-s, -s, s], [s, -s, s]], [[-s, s, s], [s, s, s]],
+          [[-s, -s, -s], [-s, s, -s]], [[s, -s, -s], [s, s, -s]], [[-s, -s, s], [-s, s, s]], [[s, -s, s], [s, s, s]],
+          [[-s, -s, -s], [-s, -s, s]], [[s, -s, -s], [s, -s, s]], [[-s, s, -s], [-s, s, s]], [[s, s, -s], [s, s, s]],
+        ];
+        for (let i = 0; i < COUNT; i += 1) {
+          let x, y, z;
+          const roll = Math.random();
+          if (roll < 0.34) {
+            const edge = edges[i % 12];
+            const t = Math.random();
+            x = edge[0][0] + (edge[1][0] - edge[0][0]) * t + gauss() * 0.12;
+            y = edge[0][1] + (edge[1][1] - edge[0][1]) * t + gauss() * 0.12;
+            z = edge[0][2] + (edge[1][2] - edge[0][2]) * t + gauss() * 0.12;
+          } else if (roll < 0.56) {
+            y = s; x = rand(-s, s); z = rand(-s, s);
+          } else if (roll < 0.78) {
+            z = s; x = rand(-s, s); y = rand(-s, s);
+          } else {
+            x = s; y = rand(-s, s); z = rand(-s, s);
+          }
+          const x1 = x * cy + z * sy;
+          const z1 = -x * sy + z * cy;
+          arr[i * 3] = x1;
+          arr[i * 3 + 1] = y * cp - z1 * sp;
+          arr[i * 3 + 2] = y * sp + z1 * cp;
+        }
+        return arr;
+      };
+
+      const makeClusters = () => {
+        const arr = new Float32Array(COUNT * 3);
+        const centers = [
+          [-17, 6.5, 0], [0, 6.5, -2], [17, 6.5, 0],
+          [-17, -6.5, 0], [0, -6.5, 2], [17, -6.5, 0],
+        ];
+        for (let i = 0; i < COUNT; i += 1) {
+          const center = centers[i % 6];
+          arr[i * 3] = center[0] + gauss() * 3;
+          arr[i * 3 + 1] = center[1] + gauss() * 2.6;
+          arr[i * 3 + 2] = center[2] + gauss() * 2;
+        }
+        return arr;
+      };
+
+      const makeChaos = () => {
+        const arr = new Float32Array(COUNT * 3);
+        for (let i = 0; i < COUNT; i += 1) {
+          const radius = Math.pow(Math.random(), 0.42) * 34;
+          const theta = Math.random() * Math.PI * 2;
+          const phi = Math.acos(rand(-1, 1));
+          arr[i * 3] = radius * Math.sin(phi) * Math.cos(theta);
+          arr[i * 3 + 1] = radius * Math.cos(phi) * 0.72;
+          arr[i * 3 + 2] = radius * Math.sin(phi) * Math.sin(theta);
+        }
+        return arr;
+      };
+
+      const makeRings = () => {
+        const arr = new Float32Array(COUNT * 3);
+        const centers = [
+          [-16, 7, 0], [16, 7, 0], [-10, -8, 0], [10, -8, 0], [0, 1, -4],
+        ];
+        const tilts = [0.5, -0.4, 0.35, -0.5, 0.15];
+        for (let i = 0; i < COUNT; i += 1) {
+          const ring = i % 5;
+          const angle = Math.random() * Math.PI * 2;
+          const radius = 6.4 + gauss() * 0.5;
+          const x = Math.cos(angle) * radius;
+          const y = Math.sin(angle) * radius;
+          const tilt = tilts[ring];
+          arr[i * 3] = centers[ring][0] + x;
+          arr[i * 3 + 1] = centers[ring][1] + y * Math.cos(tilt);
+          arr[i * 3 + 2] = centers[ring][2] + y * Math.sin(tilt) + gauss() * 0.4;
+        }
+        return arr;
+      };
+
+      const makeMonolith = () => {
+        const arr = new Float32Array(COUNT * 3);
+        const w = 7, h = 19, d = 3.4;
+        for (let i = 0; i < COUNT; i += 1) {
+          const face = Math.random();
+          let x, y, z;
+          if (face < 0.42) {
+            x = rand(-w, w); y = rand(-h, h); z = d;
+          } else if (face < 0.84) {
+            x = rand(-w, w); y = rand(-h, h); z = -d;
+          } else if (face < 0.92) {
+            x = w; y = rand(-h, h); z = rand(-d, d);
+          } else {
+            x = -w; y = rand(-h, h); z = rand(-d, d);
+          }
+          const erosion = gauss() * 0.35;
+          arr[i * 3] = x + erosion;
+          arr[i * 3 + 1] = y * 0.92 + erosion;
+          arr[i * 3 + 2] = z + erosion;
+        }
+        return arr;
+      };
+
+      const makeConstellation = () => {
+        const arr = new Float32Array(COUNT * 3);
+        const nodes = [];
+        for (let n = 0; n < 8; n += 1) {
+          const angle = (n / 8) * Math.PI * 2 - Math.PI / 2;
+          nodes.push([Math.cos(angle) * 17, Math.sin(angle) * 9.5, Math.sin(angle * 2) * 2]);
+        }
+        for (let i = 0; i < COUNT; i += 1) {
+          if (i % 10 < 7) {
+            const node = nodes[i % 8];
+            arr[i * 3] = node[0] + gauss() * 2.4;
+            arr[i * 3 + 1] = node[1] + gauss() * 2.4;
+            arr[i * 3 + 2] = node[2] + gauss() * 2.4;
+          } else {
+            const a = nodes[i % 8];
+            const b = nodes[(i + 1) % 8];
+            const t = Math.random();
+            arr[i * 3] = a[0] + (b[0] - a[0]) * t + gauss() * 0.3;
+            arr[i * 3 + 1] = a[1] + (b[1] - a[1]) * t + gauss() * 0.3;
+            arr[i * 3 + 2] = a[2] + (b[2] - a[2]) * t + gauss() * 0.3;
+          }
+        }
+        return arr;
+      };
+
+      const makeGlyph = () => {
+        const cv = document.createElement('canvas');
+        cv.width = 1400;
+        cv.height = 400;
+        const ctx = cv.getContext('2d');
+        ctx.fillStyle = '#000';
+        ctx.fillRect(0, 0, cv.width, cv.height);
+        ctx.fillStyle = '#fff';
+        ctx.font = '700 190px "Touchstone Merienda", "Merienda", "Hanken Grotesk Variable", "Inter Variable", Arial, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('TOUCHSTONE', cv.width / 2, cv.height / 2 + 10);
+        const data = ctx.getImageData(0, 0, cv.width, cv.height).data;
+        const points = [];
+        for (let y = 0; y < cv.height; y += 3) {
+          for (let x = 0; x < cv.width; x += 3) {
+            if (data[(y * cv.width + x) * 4] > 120) points.push([x, y]);
+          }
+        }
+        if (points.length < 400) return null;
+        const arr = new Float32Array(COUNT * 3);
+        const scale = 64 / cv.width;
+        for (let i = 0; i < COUNT; i += 1) {
+          const p = points[(Math.random() * points.length) | 0];
+          arr[i * 3] = (p[0] - cv.width / 2) * scale + gauss() * 0.14;
+          arr[i * 3 + 1] = (cv.height / 2 - p[1]) * scale + 3.5 + gauss() * 0.14;
+          arr[i * 3 + 2] = gauss() * 0.7;
+        }
+        return arr;
+      };
+
+      const targets = [
+        makeSaturn(),
+        makeVortex(),
+        makeConstellation(),
+        makeChaos(),
+        makeFracture(),
+        makeRings(),
+        makeCube(),
+        makeDuel(),
+        makeClusters(),
+        makeMonolith(),
+      ];
+
+      const geometry = new THREE.BufferGeometry();
+      const fromAttr = new THREE.BufferAttribute(targets[0].slice(), 3);
+      const toAttr = new THREE.BufferAttribute(targets[0].slice(), 3);
+      geometry.setAttribute('position', fromAttr);
+      geometry.setAttribute('aTo', toAttr);
+
+      const colors = new Float32Array(COUNT * 3);
+      const sizes = new Float32Array(COUNT);
+      const phases = new Float32Array(COUNT);
+      for (let i = 0; i < COUNT; i += 1) {
+        const roll = Math.random();
+        const tone = roll < 0.12 ? CORAL : roll < 0.3 ? AMBER : CREAM;
+        const dim = rand(0.4, 1);
+        colors[i * 3] = tone.r * dim;
+        colors[i * 3 + 1] = tone.g * dim;
+        colors[i * 3 + 2] = tone.b * dim;
+        sizes[i] = Math.random() < 0.06 ? rand(2.4, 4.2) : rand(0.7, 1.9);
+        phases[i] = Math.random() * Math.PI * 2;
+      }
+      geometry.setAttribute('aColor', new THREE.BufferAttribute(colors, 3));
+      geometry.setAttribute('aSize', new THREE.BufferAttribute(sizes, 1));
+      geometry.setAttribute('aPhase', new THREE.BufferAttribute(phases, 1));
+
+      const material = new THREE.ShaderMaterial({
+        transparent: true,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending,
+        uniforms: {
+          uTime: { value: 0 },
+          uProgress: { value: 1 },
+          uWobble: { value: 0.6 },
+          uScale: { value: window.innerHeight / 900 },
+          uPulse: { value: new THREE.Vector3() },
+        },
+        vertexShader: `
+          attribute vec3 aTo;
+          attribute vec3 aColor;
+          attribute float aSize;
+          attribute float aPhase;
+          uniform float uTime;
+          uniform float uProgress;
+          uniform float uWobble;
+          uniform float uScale;
+          uniform vec3 uPulse;
+          varying vec3 vColor;
+          varying float vFade;
+          void main() {
+            float t = uProgress;
+            vec3 p = mix(position, aTo, t);
+            float swirl = uWobble * (0.5 + 0.5 * sin(aPhase * 3.7));
+            p.x += swirl * sin(uTime * 0.5 + aPhase);
+            p.y += swirl * cos(uTime * 0.42 + aPhase * 1.31);
+            p.z += swirl * sin(uTime * 0.61 + aPhase * 0.73);
+            float band = mod(aPhase, 3.0);
+            float level = band < 1.0 ? uPulse.x : (band < 2.0 ? uPulse.y : uPulse.z);
+            float localMask = max(0.0, sin(aPhase * 13.7));
+            p += normalize(p + vec3(0.001)) * level * localMask * 0.55;
+            vec4 mv = modelViewMatrix * vec4(p, 1.0);
+            gl_PointSize = aSize * uScale * (150.0 / -mv.z) * (1.0 + level * localMask * 0.5);
+            vColor = aColor;
+            vFade = smoothstep(-120.0, -14.0, mv.z);
+            gl_Position = projectionMatrix * mv;
+          }
+        `,
+        fragmentShader: `
+          varying vec3 vColor;
+          varying float vFade;
+          void main() {
+            float d = length(gl_PointCoord - 0.5);
+            float alpha = smoothstep(0.5, 0.06, d);
+            gl_FragColor = vec4(vColor, alpha * 0.8 * vFade);
+          }
+        `,
+      });
+
+      const points = new THREE.Points(geometry, material);
+      scene.add(points);
+
+      const CAMS = [
+        { z: 52, y: 2 },
+        { z: 50, y: 3 },
+        { z: 46, y: 0 },
+        { z: 62, y: 6 },
+        { z: 50, y: 2 },
+        { z: 52, y: 0 },
+        { z: 48, y: 1 },
+        { z: 50, y: 0 },
+        { z: 48, y: 2 },
+        { z: 44, y: 0 },
+      ];
+      const WOBBLES = [0.55, 0.5, 0.5, 1.9, 0.45, 0.55, 0.3, 0.5, 0.45, 0.18];
+      const SPINS = [0.06, 0.04, 0.03, 0.11, 0.015, 0.04, 0.02, 0.025, 0.02, 0];
+
+      let current = 0;
+      let locked = true;
+      let wheelQuietUntil = 0;
+      let jumpQuietUntil = 0;
+      let exiting = false;
+      let progressAnim = null;
+      let wobbleBoost = 0;
+      const pointer = { x: 0, y: 0 };
+
+      const AUDIO_START = 6;
+      let audioCtx = null;
+      let analyser = null;
+      let freqData = null;
+      let audioReady = false;
+      let volumeFlash = null;
+      const pulse = { bass: 0, mid: 0, high: 0 };
+      const startAudio = () => {
+        if (audioReady) return;
+        audioReady = true;
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const source = audioCtx.createMediaElementSource(bgm);
+        analyser = audioCtx.createAnalyser();
+        analyser.fftSize = 256;
+        analyser.smoothingTimeConstant = 0.82;
+        freqData = new Uint8Array(analyser.frequencyBinCount);
+        source.connect(analyser);
+        analyser.connect(audioCtx.destination);
+        bgm.volume = 0.55;
+        bgm.currentTime = AUDIO_START;
+        bgm.play().catch(() => {});
+      };
+      const gestureStart = () => {
+        startAudio();
+        if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+        if (bgm.paused) {
+          if (bgm.currentTime < AUDIO_START) bgm.currentTime = AUDIO_START;
+          bgm.play().catch(() => {});
+        }
+      };
+      bgm.addEventListener('loadedmetadata', () => {
+        if (bgm.currentTime < AUDIO_START) bgm.currentTime = AUDIO_START;
+      });
+      bgm.addEventListener('ended', () => {
+        bgm.currentTime = AUDIO_START;
+        bgm.play().catch(() => {});
+      });
+      const bandLevel = (from, to) => {
+        let sum = 0;
+        for (let i = from; i < to; i += 1) sum += freqData[i];
+        return sum / ((to - from) * 255);
+      };
+      const showVolume = () => {
+        musicBtn.textContent = `音乐 ${Math.round(bgm.volume * 100)}%`;
+        window.clearTimeout(volumeFlash);
+        volumeFlash = window.setTimeout(() => {
+          musicBtn.textContent = '音乐';
+        }, 1100);
+      };
+
+      const pad = (value) => String(value + 1).padStart(2, '0');
+      const easeInOut = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+
+      const setOverlay = (index) => {
+        overlays.forEach((overlay) => {
+          const active = Number(overlay.dataset.scene) === index;
+          overlay.classList.toggle('is-active', active);
+          overlay.setAttribute('aria-hidden', active ? 'false' : 'true');
+        });
+        indicator.textContent = `${pad(index)} / ${String(TOTAL).padStart(2, '0')}`;
+      };
+
+      const runCounters = (index) => {
+        const overlay = overlays[index];
+        overlay.querySelectorAll('[data-count]').forEach((el) => {
+          const target = el.dataset.count;
+          const startTime = performance.now();
+          const step = (now) => {
+            const t = Math.min(1, (now - startTime) / 1100);
+            const ease = 1 - Math.pow(1 - t, 3);
+            el.textContent = target.replace(/\d+/g, (digits) => String(Math.round(Number(digits) * ease)));
+            if (t < 1 && current === index) requestAnimationFrame(step);
+            else el.textContent = target;
+          };
+          requestAnimationFrame(step);
+        });
+      };
+
+      const morphTo = (index) => {
+        const p0 = material.uniforms.uProgress.value;
+        if (p0 >= 1) {
+          fromAttr.array.set(toAttr.array);
+        } else {
+          for (let i = 0; i < fromAttr.array.length; i += 1) {
+            fromAttr.array[i] += (toAttr.array[i] - fromAttr.array[i]) * p0;
+          }
+        }
+        fromAttr.needsUpdate = true;
+        toAttr.array.set(targets[index]);
+        toAttr.needsUpdate = true;
+        material.uniforms.uProgress.value = 0;
+        wobbleBoost = 2.4;
+        const rotFrom = points.rotation.y;
+        const rotTo = Math.round(rotFrom / (Math.PI * 2)) * (Math.PI * 2);
+        const startTime = performance.now();
+        progressAnim = (now) => {
+          const t = Math.min(1, (now - startTime) / 1350);
+          const eased = easeInOut(t);
+          material.uniforms.uProgress.value = eased;
+          points.rotation.y = rotFrom + (rotTo - rotFrom) * eased;
+          if (t >= 1) progressAnim = null;
+        };
+      };
+
+      const goTo = (index) => {
+        if (locked || exiting || index === current || index < 0 || index >= TOTAL) return;
+        locked = true;
+        current = index;
+        morphTo(index);
+        setOverlay(index);
+        runCounters(index);
+        window.setTimeout(() => {
+          locked = false;
+          wheelQuietUntil = performance.now() + 220;
+        }, 1150);
+      };
+
+      const jumpTo = (index) => {
+        const next = Math.min(TOTAL - 1, Math.max(0, index));
+        if (exiting || next === current) return;
+        current = next;
+        morphTo(next);
+        setOverlay(next);
+        runCounters(next);
+        locked = false;
+        wheelQuietUntil = performance.now() + 260;
+      };
+
+      const handleWheel = (event) => {
+        if (exiting) return;
+        gestureStart();
+        const delta = event.deltaMode === 1 ? event.deltaY * 16 : event.deltaY;
+        if (Math.abs(delta) < 20) return;
+        const target = event.target instanceof Element ? event.target : null;
+        if (target && target.closest('#musicBtn')) {
+          event.preventDefault();
+          bgm.muted = false;
+          musicBtn.classList.remove('is-muted');
+          bgm.volume = Math.min(1, Math.max(0, bgm.volume + (delta > 0 ? -0.06 : 0.06)));
+          showVolume();
+          return;
+        }
+        if (target && target.closest('#indicator')) {
+          event.preventDefault();
+          if (performance.now() < jumpQuietUntil) return;
+          jumpQuietUntil = performance.now() + 150;
+          jumpTo(current + (delta > 0 ? 1 : -1));
+          return;
+        }
+        if (performance.now() < wheelQuietUntil) return;
+        event.preventDefault();
+        goTo(current + (delta > 0 ? 1 : -1));
+      };
+
+      const handleKey = (event) => {
+        if (exiting) return;
+        gestureStart();
+        if (['ArrowRight', 'ArrowDown', ' '].includes(event.key)) {
+          event.preventDefault();
+          goTo(current + 1);
+        }
+        if (['ArrowLeft', 'ArrowUp'].includes(event.key)) {
+          event.preventDefault();
+          goTo(current - 1);
+        }
+      };
+
+      const enterSite = async (event) => {
+        event.preventDefault();
+        if (exiting) return;
+        exiting = true;
+        const burst = makeChaos();
+        for (let i = 0; i < burst.length; i += 1) burst[i] *= 2.6;
+        fromAttr.array.set(toAttr.array);
+        fromAttr.needsUpdate = true;
+        toAttr.array.set(burst);
+        toAttr.needsUpdate = true;
+        material.uniforms.uProgress.value = 0;
+        wobbleBoost = 4;
+        const startTime = performance.now();
+        progressAnim = (now) => {
+          const t = Math.min(1, (now - startTime) / 1400);
+          material.uniforms.uProgress.value = easeInOut(t);
+          if (t >= 1) progressAnim = null;
+        };
+        overlays.forEach((overlay) => overlay.classList.remove('is-active'));
+        document.querySelector('.hud').classList.add('is-hidden');
+        await new Promise((resolve) => window.setTimeout(resolve, 900));
+        veil.classList.add('is-visible');
+        veil.setAttribute('aria-hidden', 'false');
+        await new Promise((resolve) => window.setTimeout(resolve, 2100));
+        screenEl.classList.add('is-fading');
+        await new Promise((resolve) => window.setTimeout(resolve, 700));
+        window.location.href = '/';
+      };
+
+      const clock = new THREE.Clock();
+      const camPos = new THREE.Vector3(0, 0, 52);
+
+      const tick = () => {
+        const elapsed = clock.getElapsedTime();
+        material.uniforms.uTime.value = elapsed;
+        if (progressAnim) progressAnim(performance.now());
+        if (analyser && !bgm.paused && !bgm.muted) {
+          analyser.getByteFrequencyData(freqData);
+          pulse.bass += (bandLevel(1, 7) - pulse.bass) * 0.25;
+          pulse.mid += (bandLevel(10, 40) - pulse.mid) * 0.25;
+          pulse.high += (bandLevel(45, 110) - pulse.high) * 0.25;
+        } else {
+          pulse.bass *= 0.92;
+          pulse.mid *= 0.92;
+          pulse.high *= 0.92;
+        }
+        material.uniforms.uPulse.value.set(pulse.bass, pulse.mid, pulse.high);
+        wobbleBoost *= 0.955;
+        const wobbleTarget = (exiting ? 2.6 : WOBBLES[current]) + wobbleBoost;
+        material.uniforms.uWobble.value += (wobbleTarget - material.uniforms.uWobble.value) * 0.05;
+        if (!progressAnim) points.rotation.y += SPINS[current] * 0.016;
+        const cam = CAMS[current];
+        camPos.x += (pointer.x * 3.2 - camPos.x) * 0.03;
+        camPos.y += (cam.y + pointer.y * 1.8 - camPos.y) * 0.03;
+        camPos.z += (cam.z - camPos.z) * 0.03;
+        camera.position.copy(camPos);
+        camera.lookAt(0, 0, 0);
+        renderer.render(scene, camera);
+        requestAnimationFrame(tick);
+      };
+
+      window.addEventListener('wheel', handleWheel, { passive: false });
+      window.addEventListener('keydown', handleKey);
+      window.addEventListener('pointerdown', gestureStart);
+      musicBtn.addEventListener('click', () => {
+        const wasPlaying = audioReady && !bgm.paused;
+        gestureStart();
+        if (!wasPlaying) return;
+        bgm.muted = !bgm.muted;
+        musicBtn.classList.toggle('is-muted', bgm.muted);
+      });
+      skipBtn.addEventListener('click', () => {
+        if (exiting) return;
+        exiting = true;
+        document.querySelector('.hud').classList.add('is-hidden');
+        screenEl.classList.add('is-fading');
+        window.setTimeout(() => {
+          window.location.href = '/';
+        }, 650);
+      });
+      window.addEventListener('pointermove', (event) => {
+        pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
+        pointer.y = -((event.clientY / window.innerHeight) * 2 - 1);
+      });
+      window.addEventListener('resize', () => {
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        material.uniforms.uScale.value = window.innerHeight / 900;
+      });
+      document.querySelectorAll('[data-enter]').forEach((link) => link.addEventListener('click', enterSite));
+
+      document.fonts.ready.then(() => {
+        const glyph = makeGlyph();
+        if (glyph) {
+          targets[TOTAL - 1] = glyph;
+          if (current === TOTAL - 1 && !exiting) morphTo(TOTAL - 1);
+        }
+      });
+
+      setOverlay(0);
+      tick();
+      startAudio();
+      if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
+      window.setTimeout(() => {
+        locked = false;
+        hint.classList.add('is-visible');
+      }, 900);
+    </script>
+  </body>
+</html>
+
+<style is:global>
+  @font-face {
+    font-family: 'Touchstone Merienda';
+    src: url('/introduce/merienda-bold.ttf') format('truetype');
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+  }
+
+  html,
+  body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+    background: #14110E;
+    color: #FAF3E7;
+    font-family: var(--font-sans);
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  .screen {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    background: #14110E;
+    transition: opacity 700ms ease;
+  }
+
+  .screen.is-fading {
+    opacity: 0;
+  }
+
+  #gl {
+    position: absolute;
+    inset: 0;
+    display: block;
+  }
+
+  .vignette {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+    background:
+      radial-gradient(ellipse 52% 44% at 30% 24%, rgba(232, 185, 138, 0.1), transparent 70%),
+      radial-gradient(ellipse 90% 80% at 50% 50%, transparent 52%, rgba(10, 8, 6, 0.78) 100%);
+  }
+
+  .grain {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    pointer-events: none;
+    opacity: 0.05;
+    mix-blend-mode: screen;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='0.75'/%3E%3C/svg%3E");
+    background-size: 180px 180px;
+  }
+
+  .overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+    display: grid;
+    place-content: center;
+    justify-items: center;
+    text-align: center;
+    padding: 0 8vw;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 600ms ease;
+  }
+
+  .overlay.is-active {
+    opacity: 1;
+  }
+
+  .overlay > * {
+    opacity: 0;
+    transform: translateY(26px);
+    transition: opacity 700ms cubic-bezier(0.2, 0.7, 0.2, 1), transform 700ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+
+  .overlay.is-active > * {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .overlay.is-active > *:nth-child(1) { transition-delay: 350ms; }
+  .overlay.is-active > *:nth-child(2) { transition-delay: 500ms; }
+  .overlay.is-active > *:nth-child(3) { transition-delay: 650ms; }
+  .overlay.is-active > *:nth-child(4) { transition-delay: 800ms; }
+
+  .kicker {
+    margin: 0;
+    color: #CC785C;
+    font-family: var(--font-mono);
+    font-size: clamp(12px, 1.5vh, 16px);
+    letter-spacing: 0.34em;
+    text-transform: uppercase;
+    text-shadow: 0 0 24px rgba(20, 17, 14, 0.9);
+  }
+
+  .overlay h1 {
+    margin: 3.4vh 0 0;
+    font-family: var(--font-serif);
+    font-size: 19vh;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: 0.04em;
+    text-shadow: 0 0 60px rgba(20, 17, 14, 0.8);
+  }
+
+  .overlay h1.latin {
+    font-size: 12.5vh;
+    letter-spacing: 0.12em;
+  }
+
+  .overlay .brand {
+    font-family: 'Touchstone Merienda', 'Merienda', var(--font-serif);
+    font-weight: 700;
+    letter-spacing: 0;
+    font-synthesis: none;
+  }
+
+  .overlay h1.latin.brand {
+    font-size: 11vh;
+  }
+
+  .overlay h2 {
+    margin: 3.2vh 0 0;
+    font-family: var(--font-serif);
+    font-size: 9.5vh;
+    font-weight: 650;
+    line-height: 1.06;
+    text-shadow: 0 0 50px rgba(20, 17, 14, 0.8);
+  }
+
+  .subline {
+    margin: 4vh 0 0;
+    color: rgba(250, 243, 231, 0.78);
+    font-family: var(--font-mono);
+    font-size: clamp(13px, 1.8vh, 18px);
+    letter-spacing: 0.22em;
+  }
+
+  .line {
+    margin: 5vh 0 0;
+    color: rgba(250, 243, 231, 0.9);
+    font-family: var(--font-serif);
+    font-size: 3.6vh;
+    font-weight: 650;
+    text-shadow: 0 0 40px rgba(20, 17, 14, 0.9);
+  }
+
+  .line.narrow {
+    max-width: 62vw;
+    font-size: 3vh;
+    font-weight: 500;
+    line-height: 1.75;
+    color: rgba(250, 243, 231, 0.85);
+  }
+
+  .line .zero {
+    color: #CC785C;
+    font-size: 5.2vh;
+    font-weight: 700;
+  }
+
+  .flow i {
+    margin: 0 1.2vh;
+    color: #CC785C;
+    font-style: normal;
+  }
+
+  .stat-row {
+    display: flex;
+    gap: 9vw;
+    margin-top: 5vh;
+  }
+
+  .stat strong {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 16vh;
+    font-weight: 500;
+    line-height: 0.9;
+    text-shadow: 0 0 70px rgba(20, 17, 14, 0.85);
+  }
+
+  .stat span {
+    display: block;
+    margin-top: 2.2vh;
+    color: rgba(250, 243, 231, 0.72);
+    font-family: var(--font-serif);
+    font-size: 2.6vh;
+  }
+
+  .chip-row {
+    display: flex;
+    gap: 2.4vh;
+    margin-top: 5.5vh;
+  }
+
+  .chip {
+    padding: 1.7vh 3.4vh;
+    border: 1px solid rgba(204, 120, 92, 0.55);
+    border-radius: 999px;
+    color: #FAF3E7;
+    font-family: var(--font-serif);
+    font-size: 3vh;
+    font-weight: 650;
+    background: rgba(20, 17, 14, 0.42);
+    backdrop-filter: blur(2px);
+  }
+
+  .member-ring {
+    display: grid;
+    --member-card-h: clamp(112px, 10.5vw, 178px);
+    --member-gap-x: clamp(14px, 2.6vw, 42px);
+    --member-gap-y: clamp(14px, 3.4vh, 34px);
+    width: min(88vw, 1680px);
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-rows: repeat(2, var(--member-card-h));
+    grid-auto-rows: var(--member-card-h);
+    gap: var(--member-gap-y) var(--member-gap-x);
+    margin-top: clamp(24px, 6vh, 68px);
+  }
+
+  .member {
+    position: relative;
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    justify-content: center;
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+    padding: clamp(12px, 2.2vh, 28px) clamp(10px, 1.4vw, 24px);
+    border: 1px solid rgba(250, 243, 231, 0.16);
+    background: rgba(20, 17, 14, 0.5);
+    backdrop-filter: blur(3px);
+  }
+
+  .member strong {
+    display: block;
+    font-family: var(--font-serif);
+    font-size: clamp(18px, 3.4vh, 36px);
+    font-weight: 650;
+    line-height: 1.08;
+    white-space: nowrap;
+  }
+
+  .member span {
+    display: block;
+    margin-top: clamp(8px, 1.2vh, 14px);
+    color: rgba(250, 243, 231, 0.62);
+    font-family: var(--font-mono);
+    font-size: clamp(10px, 1.45vh, 15px);
+    letter-spacing: 0.16em;
+    line-height: 1.25;
+    white-space: normal;
+  }
+
+  .member em {
+    display: block;
+    max-width: 100%;
+    margin-top: clamp(7px, 1vh, 13px);
+    color: rgba(250, 243, 231, 0.52);
+    font-family: var(--font-sans);
+    font-size: clamp(10px, 1.45vh, 15px);
+    font-style: normal;
+    line-height: 1.5;
+  }
+
+  .member em.is-latin {
+    color: rgba(204, 120, 92, 0.85);
+    font-family: var(--font-mono);
+    font-size: clamp(9px, 1.25vh, 13px);
+    letter-spacing: 0.08em;
+    overflow-wrap: anywhere;
+  }
+
+  .member.is-ai {
+    border-color: rgba(204, 120, 92, 0.66);
+  }
+
+  .member b {
+    position: absolute;
+    top: 0;
+    right: 0;
+    padding: 4px 8px;
+    background: #CC785C;
+    color: #14110E;
+    font-family: var(--font-mono);
+    font-size: clamp(9px, 1.1vh, 12px);
+    font-weight: 500;
+    letter-spacing: 0.1em;
+  }
+
+  .overlay-enter {
+    place-content: end center;
+    padding-bottom: 12.8vh;
+  }
+
+  .overlay-enter .enter-title {
+    margin-top: 1.6vh;
+    font-size: 4.6vh;
+  }
+
+  .enter-link {
+    display: inline-block;
+    margin-top: 3.7vh;
+    color: #CC785C;
+    font-family: var(--font-serif);
+    font-size: 4.2vh;
+    font-weight: 650;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.34em;
+    pointer-events: auto;
+    animation: linkBreath 2.8s ease-in-out 1.4s infinite;
+  }
+
+  .enter-link:focus-visible {
+    outline: 1px solid #CC785C;
+    outline-offset: 10px;
+  }
+
+  .hud {
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    pointer-events: none;
+    font-family: var(--font-mono);
+    transition: opacity 400ms ease;
+  }
+
+  .hud.is-hidden {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .hint {
+    position: absolute;
+    bottom: 7vh;
+    left: 50%;
+    display: flex;
+    align-items: center;
+    gap: 1.1em;
+    margin: 0;
+    color: rgba(250, 243, 231, 0.5);
+    font-size: 12px;
+    letter-spacing: 0.3em;
+    opacity: 0;
+    transform: translate(-50%, 8px);
+    transition: opacity 600ms ease, transform 600ms ease;
+  }
+
+  .hint.is-visible {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+
+  .hint i {
+    color: rgba(250, 243, 231, 0.26);
+    font-style: normal;
+  }
+
+  .hint button {
+    padding: 0.4em 0;
+    border: none;
+    background: none;
+    color: rgba(250, 243, 231, 0.5);
+    font: inherit;
+    letter-spacing: inherit;
+    cursor: pointer;
+    pointer-events: auto;
+    transition: color 200ms ease;
+  }
+
+  .hint button:hover {
+    color: #CC785C;
+  }
+
+  .hint button.is-muted {
+    color: rgba(250, 243, 231, 0.3);
+    text-decoration: line-through;
+  }
+
+  .indicator {
+    position: absolute;
+    right: 4vw;
+    bottom: 7vh;
+    margin: 0;
+    padding: 0.6em 0;
+    color: rgba(250, 243, 231, 0.72);
+    font-size: 13px;
+    letter-spacing: 0.22em;
+    pointer-events: auto;
+    cursor: ns-resize;
+  }
+
+  .veil {
+    position: absolute;
+    inset: 0;
+    z-index: 8;
+    display: grid;
+    place-content: center;
+    justify-items: center;
+    background: rgba(20, 17, 14, 0.92);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 800ms ease;
+  }
+
+  .veil.is-visible {
+    opacity: 1;
+  }
+
+  .veil h1 {
+    margin: 0;
+    font-family: 'Touchstone Merienda', 'Merienda', var(--font-serif);
+    font-size: 7.5vh;
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: 0;
+    font-synthesis: none;
+  }
+
+  .veil div {
+    width: 90px;
+    height: 2px;
+    margin: 3.4vh 0 2.6vh;
+    background: #CC785C;
+  }
+
+  .veil p {
+    margin: 0;
+    color: rgba(250, 243, 231, 0.72);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.26em;
+  }
+
+  @keyframes linkBreath {
+    0%,
+    100% {
+      transform: scale(1);
+    }
+
+    50% {
+      transform: scale(1.05);
+    }
+  }
+</style>
