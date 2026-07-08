@@ -155,33 +155,35 @@
         box.innerHTML = '';
         return;
       }
-      let p;
       try {
-        p = await getPf();
+        const p = await getPf();
+        const r = await p.search(q);
+        if (mine !== seq) return;
+        const data = await Promise.all(r.results.slice(0, 12).map((x) => x.data()));
+        if (mine !== seq) return;
+        if (!data.length) {
+          box.innerHTML = '<p class="ts-search__empty">没找到「' + esc(q) + '」相关内容</p>';
+          return;
+        }
+        box.innerHTML = data
+          .map(
+            (d) =>
+              '<a class="ts-search__hit" href="' +
+              d.url +
+              '"><span class="ts-search__hit-title">' +
+              esc((d.meta && d.meta.title) || d.url) +
+              '</span><span class="ts-search__hit-excerpt">' +
+              (d.excerpt || '') +
+              '</span></a>',
+          )
+          .join('');
       } catch (e) {
-        box.innerHTML = '<p class="ts-search__empty">搜索索引未就绪（本地需先 pnpm build）</p>';
-        return;
+        // 搜索失败不再静默留白：显示原因，便于定位移动端 Safari 的具体报错
+        if (mine !== seq) return;
+        const msg = String((e && e.message) || e);
+        const hint = /import|fetch|module|network/i.test(msg) ? '搜索索引未就绪' : '搜索暂时不可用';
+        box.innerHTML = '<p class="ts-search__empty">' + hint + '：' + esc(msg) + '</p>';
       }
-      const r = await p.search(q);
-      if (mine !== seq) return;
-      const data = await Promise.all(r.results.slice(0, 12).map((x) => x.data()));
-      if (mine !== seq) return;
-      if (!data.length) {
-        box.innerHTML = '<p class="ts-search__empty">没找到「' + esc(q) + '」相关内容</p>';
-        return;
-      }
-      box.innerHTML = data
-        .map(
-          (d) =>
-            '<a class="ts-search__hit" href="' +
-            d.url +
-            '"><span class="ts-search__hit-title">' +
-            esc((d.meta && d.meta.title) || d.url) +
-            '</span><span class="ts-search__hit-excerpt">' +
-            (d.excerpt || '') +
-            '</span></a>',
-        )
-        .join('');
     };
 
     let t;
